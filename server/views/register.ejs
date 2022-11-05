@@ -13,8 +13,13 @@
     <h1>Register New User</h1>
     <form id="form-user-info" action="/" method="POST">
         <div class="input-field">
+            <label for="goal-amount">Daily Intake Goal (Liters)</label>
+            <input id="goal-amount" name="goal" type="number" step="any" min="1" max="5" value="2" required />
+        </div>
+
+        <div class="input-field">
             <label for="phone-number">Phone Number</label>
-            <input id="phone-number" name="phone" type="tel" placeholder="604XXXXXXX" minlength="10" maxlength="10 "
+            <input id="phone-number" name="phone" type="tel" placeholder="604XXXXXXX" minlength="10" maxlength="10"
                 required />
         </div>
 
