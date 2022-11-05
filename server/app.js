@@ -25,6 +25,18 @@ app.post('/sms/:phone', (req, res) => {
     if (phone == null || parseInt(phone) === NaN) {
         console.log("Error, invalid phone number");
     }
+    require('dotenv').config();
+    const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_TOKEN);
+    client.messages
+        .create({
+            body: 'This is your water buddy here to remind you that it\'s time to drink up!',
+            from: '+19136756721',
+            to: `+1${phone}`
+        })
+        .then(message => console.log(message.sid))
+        .catch(error => console.log);
+
+    res.send(`SMS sent to ${phone}`);
 });
 
 let formData;
