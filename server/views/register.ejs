@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Buddy</title>
+    <link href="/styles.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <h1>Register New User</h1>
+    <form id="form-user-info" action="/" method="POST">
+        <div class="input-field">
+            <label for="phone-number">Phone Number</label>
+            <input id="phone-number" name="phone" type="tel" placeholder="604XXXXXXX" minlength="10" maxlength="10 "
+                required />
+        </div>
+
+        <div class="radio-buttons">
+            <span id="radio-button-title">Send Me Text Message Reminders</span>
+            <div class="radio-button">
+                <input id="one-hour" type="radio" name="frequency" value="1" checked />
+                <label for="one-hour">every hour</label>
+            </div>
+
+            <div class="radio-button">
+                <input id="two-hours" type="radio" name="frequency" value="2" />
+                <label for="two-hours">every two hours</label>
+            </div>
+
+            <div class="radio-button">
+                <input id="three-hours" type="radio" name="frequency" value="3" />
+                <label for="three-hours">every three hours</label>
+            </div>
+
+            <div class="radio-button">
+                <input id="four-hours" type="radio" name="frequency" value="4" />
+                <label for="four-hours">every four hours</label>
+            </div>
+
+            <div class="radio-button">
+                <input id="never" type="radio" name="frequency" value="never" />
+                <label for="never">don't send reminders</label>
+            </div>
+        </div>
+
+        <button>Save</button>
+    </form>
+</body>
+
+</html>
