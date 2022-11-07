@@ -1,0 +1,92 @@
+
+#ifndef HARDWAREIO_H
+#define HARDWAREIO_H
+
+/**
+ * This header file includes general functions for:
+ * Byte Operations
+ * Configuring Pins
+ * GPIO
+ * Beaglebone's LEDs
+ * Analog IO
+ * I2C
+ */
+
+
+
+// Bit Operations
+#define BITS_PER_BYTE 8
+
+// Returns the byte rotated to the right by n bits
+char rotateCharRight(char byte, int n);
+
+// Returns the byte rotated to the left by n bits
+char rotateCharLeft(char bbyte, int n);
+
+
+
+// Pin Config
+void configPin(const char* pin, const char* config);
+
+
+
+// GPIO
+#define GPIO_IN "in"
+#define GPIO_OUT "out"
+
+// A more specific version of configPin(pin, config)
+void configPinForGPIO(const char* pin, const int gpioNum, const char *direction);
+
+int gpioRead(int gpioNum);
+
+void gpioWrite(int gpioNum, int value);
+
+
+
+// LED
+#define LED_ON "1"
+#define LED_OFF "0"
+
+static const char *LED_TRIGGER_DEFAULT[] = {"heartbeat", "mmc0", "cpu0", "mmc1"};
+
+// LED number is in the range 0 to 3
+void setLEDAttribute(const int LEDNum, const char* attribute, const char* value);
+
+
+
+// Analog IO
+// Analog Channels are 0-indexed
+#define NUM_ANALOG_CHANNELS 7
+#define MAX_A2D_VALUE 4095.0f // This is a float so that float division can be done without casting
+#define MAX_AIN_VOLTAGE 1.8f
+
+// Returns the A2D value read from the specified analog channel, which is an integer in the range 0 to MAX_A2D_VALUE
+// Analog channels are in the range 0 to 6
+int analogRead(int analogNum);
+
+// Returns the voltage read from the specified analog channel, which is a floating point number in the range 0 to MAX_AIN_VOLTAGE Volts
+// Analog channels are in the range 0 to 6
+float analogReadVoltage(int analogChannel);
+
+
+
+// I2C
+typedef struct {
+    char *scl;
+    char *sda;
+} i2c_port_t;
+
+static const i2c_port_t I2C_PORTS[] = {
+    {"p9.17", "p9.18"}
+};
+
+// Returns I2C File Descriptor of I2C bus
+// I2C bus number is in the range 1 to 3
+// Configures pins on the specified bus number for I2C
+int initI2CBus(int bus, int addr);
+
+void writeI2CReg(int i2cFileDesc, unsigned char addr, unsigned char value);
+
+unsigned char readI2CReg(int i2cFileDesc, unsigned char addr);
+
+#endif
