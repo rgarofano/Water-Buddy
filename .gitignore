@@ -1,2 +1,3 @@
-spidev_test
 main
+spidev_test
+server/.env
