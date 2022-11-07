@@ -27,6 +27,8 @@ static char*    rstPin;
 static int      rstGpioNum;
 static char*    sdaPin;
 
+static int spiFileDesc = -1;
+
 
 
 // Pin Defines
@@ -77,19 +79,43 @@ unsigned char singleTransfer(int fd, unsigned char data_byte)
 	return (rec_byte);
 }
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+static void transfer(int fd)
+{
+	int ret;
+	uint8_t tx[] = {
+		(0x80 | (0x37 << 1)), 0x00
+	};
+
+	uint8_t rx[ARRAY_SIZE(tx)] = {0, };
+
+	struct spi_ioc_transfer tr = {
+		.tx_buf = (unsigned long)tx,
+		.rx_buf = (unsigned long)rx,
+		.len = ARRAY_SIZE(tx),
+		.delay_usecs = 0,
+		.speed_hz = 500000,
+		.bits_per_word = 8,
+	};
+
+	ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
+	if (ret < 1)
+		perror("SPI_IOC_MESSAGE");
+
+	for (ret = 0; ret < ARRAY_SIZE(tx); ret++) {
+		if (!(ret % 6))
+			puts("");
+		printf("%.2X ", rx[ret]);
+	}
+	puts("");
+}
+
 
 
 // From https://www.emcraft.com/stm32f769i-discovery-board/accessing-spi-devices-in-linux
 void test1(void)
 {
-    char *dev_path = "/dev/spidev1.1";
-
-    int fd = open(dev_path, O_RDWR);
-    if (fd < 0) {
-        perror("open");
-        printf("Error: Couldn't open %s\n", dev_path);
-        exit(1);
-    }
+    int fd = spiFileDesc;
 
     // unsigned char send[16];
     // memset(send, 0, sizeof send);
@@ -108,8 +134,10 @@ void test1(void)
     // xfer.tx_nbits           = 0;
     // xfer.word_delay_usecs   = 0;
 
-    unsigned char response1 = singleTransfer(fd, 0x80 | (0x37 << 1));
-    unsigned char response2 = singleTransfer(fd, 0);
+    // unsigned char response1 = singleTransfer(fd, 0x80 | (0x37 << 1));
+    // unsigned char response2 = singleTransfer(fd, 0);
+
+    transfer(fd);
 
     // xfer[0].tx_buf = (unsigned long)send;
     // xfer[0].len = 1;
@@ -129,7 +157,7 @@ void test1(void)
     // }
     // printf("\n");
 
-    printf("response: %x %x\n", response1, response2);
+    // printf("response: %x %x\n", response1, response2);
 
 }
 
@@ -149,13 +177,9 @@ void RFID_init(
 
     configPinForGPIO(rstPin, rstGpioNum, GPIO_OUT);
     gpioWrite(rstGpioNum, 1);
-    gpioWrite(rstGpioNum, 0);
+    // gpioWrite(rstGpioNum, 0);
 
-    configPin(RFID_MISO_PIN, "spi");
-    configPin(RFID_MOSI_PIN, "spi");
-    configPin(RFID_SCK_PIN, "spi_sclk");
-    configPin(RFID_SDA_PIN, "spi_cs");
-
+    spiFileDesc = SPI_initPort(spiBusNum, 0);
 }
 
 

@@ -6,10 +6,13 @@
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
+#include <linux/spi/spidev.h>
 
 #include "SystemTools.h"
 
 #include "HardwareIO.h"
+
+
 
 // Byte Operations
 char rotateCharRight(char byte, int n)
@@ -23,6 +26,8 @@ char rotateCharLeft(char byte, int n)
     return rotateCharRight(byte, BITS_PER_BYTE - n);
 }
 
+
+
 // Pin Config
 void configPin(const char* pin, const char* config)
 {
@@ -32,6 +37,8 @@ void configPin(const char* pin, const char* config)
     configPinCommand[COMMAND_MAX_SIZE - 1] = 0;
     system(configPinCommand);
 }
+
+
 
 // GPIO
 #define SLEEP_TIME_AFTER_EXPORT_MS 1000
@@ -92,6 +99,8 @@ void gpioWrite(int gpioNum, int value)
     fclose(gpioValueFile);
 }
 
+
+
 // LED
 void setLEDAttribute(const int LEDNum, const char* attribute, const char* value)
 {
@@ -110,6 +119,8 @@ void setLEDAttribute(const int LEDNum, const char* attribute, const char* value)
 
     fclose(ledAttFile);
 }
+
+
 
 // Analog IO
 int analogRead(int analogChannel)
@@ -138,6 +149,8 @@ float analogReadVoltage(int analogChannel)
     return ((a2dValue / MAX_A2D_VALUE) * MAX_AIN_VOLTAGE);
 }
 
+
+
 // I2C
 static const char *I2CDRV_LINUX_BUS[] = {
     "/dev/i2c-0",
@@ -145,10 +158,10 @@ static const char *I2CDRV_LINUX_BUS[] = {
     "/dev/i2c-2"
 };
 
-int initI2CBus(int bus, int addr)
+int I2C_initBus(int bus, int addr)
 {
     if(bus < 1 || bus > 2) {
-        perror("I2C: Invalid bus number");
+        printf("I2C: Invalid port number");
         exit(1);
     }
 
@@ -168,7 +181,7 @@ int initI2CBus(int bus, int addr)
     return i2cFileDesc;
 }
 
-void writeI2CReg(int i2cFileDesc, unsigned char addr, unsigned char value)
+void I2C_writeReg(int i2cFileDesc, unsigned char addr, unsigned char value)
 {
     unsigned char buff[2];
 
@@ -183,7 +196,7 @@ void writeI2CReg(int i2cFileDesc, unsigned char addr, unsigned char value)
     }
 }
 
-unsigned char readI2CReg(int i2cFileDesc, unsigned char addr)
+unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr)
 {
     // To read a register, must first write the address
     int res = write(i2cFileDesc, &addr, sizeof(addr));
@@ -205,4 +218,95 @@ unsigned char readI2CReg(int i2cFileDesc, unsigned char addr)
     return value;
 }
 
+
+
+// SPI
+int SPI_initPort(int port, int chipSelect)
+{
+    switch(port) {
+        case 0:
+            if(chipSelect != 0) {
+                printf("SPI: Invalid chip select number");
+                exit(1);
+            }
+            break;
+        case 1: 
+            if(chipSelect < 0 || chipSelect > 1) {
+                printf("SPI: Invalid chip select number");
+                exit(1);
+            }
+            break;
+        default:
+            printf("SPI: Invalid port number");
+            exit(1);
+    }
+
+    configPin(SPI_PORTS[port].cs0,  "spi_cs");
+    if(port != 0) {
+        configPin(SPI_PORTS[port].cs1,  "spi_cs");
+    }
+    configPin(SPI_PORTS[port].d0,   "spi");
+    configPin(SPI_PORTS[port].d1,   "spi");
+    configPin(SPI_PORTS[port].sclk, "spi_sclk");
+
+    #define SPI_DEVICE_LENGTH 16
+    char spiDevice[SPI_DEVICE_LENGTH];
+    sprintf(spiDevice, "/dev/spidev%d.%d", port, chipSelect);
+    spiDevice[SPI_DEVICE_LENGTH - 1] = '\0';
+    
+    // Open Device
+    int spiFileDesc = open(spiDevice, O_RDWR);
+    if (spiFileDesc < 0) {
+		printf("Error: Can't open device %s", spiDevice);
+        exit(1);
+    }
+
+    // Set port parameters
+    int errorCheck = 0;
+    int spiMode = 0;
+    int bitsPerWord = 8;
+    int speedHz = 500000;
+
+	// SPI mode
+	errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_MODE, &spiMode);
+	if (errorCheck < 0) {
+		printf("can't set spi mode");
+        exit(1);
+    }
+	errorCheck = ioctl(spiFileDesc, SPI_IOC_RD_MODE, &spiMode);
+	if (errorCheck < 0) {
+		printf("can't get spi mode");
+        exit(1);
+    }
+
+	// Bits per word
+	errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_BITS_PER_WORD, &bitsPerWord);
+	if (errorCheck < 0) {
+		printf("can't set bits per word");
+        exit(1);
+    }
+	errorCheck = ioctl(spiFileDesc, SPI_IOC_RD_BITS_PER_WORD, &bitsPerWord);
+	if (errorCheck < 0) {
+		printf("can't get bits per word");
+        exit(1);
+    }
+
+	// Max Speed (Hz)
+	errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_MAX_SPEED_HZ, &speedHz);
+	if (errorCheck < 0) {
+		printf("can't set max speed hz");
+        exit(1);
+    }
+	errorCheck = ioctl(spiFileDesc, SPI_IOC_RD_MAX_SPEED_HZ, &speedHz);
+	if (errorCheck < 0) {
+		printf("can't get max speed hz");
+        exit(1);
+    }
+
+	// printf("spi mode: %d\n", mode);
+	// printf("bits per word: %d\n", bitsPerWord);
+	// printf("max speed: %d Hz (%d KHz)\n", speedHz, speedHz/1000);
+
+    return spiFileDesc;
+}
 

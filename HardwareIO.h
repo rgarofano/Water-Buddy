@@ -77,16 +77,51 @@ typedef struct {
 } i2c_port_t;
 
 static const i2c_port_t I2C_PORTS[] = {
-    {"p9.17", "p9.18"}
+    { // I2C0
+        .scl = "p9.17",
+        .sda = "p9.18"
+    }
 };
 
 // Returns I2C File Descriptor of I2C bus
 // I2C bus number is in the range 1 to 3
 // Configures pins on the specified bus number for I2C
-int initI2CBus(int bus, int addr);
+int I2C_initBus(int bus, int addr);
 
-void writeI2CReg(int i2cFileDesc, unsigned char addr, unsigned char value);
+void I2C_writeReg(int i2cFileDesc, unsigned char addr, unsigned char value);
 
-unsigned char readI2CReg(int i2cFileDesc, unsigned char addr);
+unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr);
+
+
+
+// SPI
+#define NUM_SPI_BUSES 2
+typedef struct {
+    char *cs0;
+    char *cs1;
+    char *d0; // AKA miso
+    char *d1; // AKA mosi
+    char *sclk;
+} spi_port_t;
+
+static const spi_port_t SPI_PORTS[] = {
+    { // SPI0
+        .cs0    = "p9_17",
+        .cs1    = "none",
+        .d0     = "p9_21",
+        .d1     = "p9_18",
+        .sclk   = "p9_22"
+    },
+    { // SPI1
+        .cs0    = "p9_28",
+        .cs1    = "p9_42",
+        .d0     = "p9_29",
+        .d1     = "p9_30",
+        .sclk   = "p9_31"
+    }
+};
+
+int SPI_initPort(int port, int chipSelect);
+
 
 #endif
