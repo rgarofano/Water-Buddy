@@ -130,13 +130,7 @@ static const spi_port_t SPI_PORTS[] = {
 // Configures pins associated with the specified port number for spi
 // Opens the file associated with that port and the specified chipSelect number
 // Returns the file descriptor
-int SPI_initPort(
-    int port,
-    int chipSelect,
-    int spiMode,
-    int bitsPerWord,
-    int speedHz
-);
+int SPI_initPort(int port, int chipSelect, int spiMode, int bitsPerWord, int speedHz);
 
 // Returns the status
 // Status >= 0 is success, < 0 is error

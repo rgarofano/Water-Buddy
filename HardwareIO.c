@@ -225,13 +225,7 @@ uint8_t I2C_readReg(int i2cFileDesc, uint8_t addr)
 
 // The code for setting port parameters was taken and modified from spidev_test.c here:
 // https://github.com/derekmolloy/exploringBB/blob/version2/chp08/spi/spidev_test/spidev_test.c
-int SPI_initPort(
-    int port,
-    int chipSelect,
-    int spiMode,
-    int bitsPerWord,
-    int speedHz
-)
+int SPI_initPort(int port, int chipSelect, int spiMode, int bitsPerWord, int speedHz)
 {
     // SPI0 has 1 peripheral slot {0}
     // SPI1 has 2 peripheral slots {0, 1}

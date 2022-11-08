@@ -103,12 +103,7 @@ enum MFRC522_Register {
     // Reserved				  0x3F	// reserved for production tests
 };
 
-void RFID_init(
-    int     init_spiBusNum,
-    int     init_spiChipSelect,
-    char*   init_rstPin,
-    int     init_rstGpioNum
-);
+void RFID_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum);
 
 void RFID_writeReg(enum MFRC522_Register regAddr, uint8_t regData);
 

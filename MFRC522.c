@@ -34,12 +34,7 @@ static int spiFileDesc = -1;
 #define RFID_RST_PIN "p9_11"
 #define RFID_RST_GPIO_NUM 30
 
-void RFID_init(
-    int     init_spiBusNum,
-    int     init_spiChipSelect,
-    char*   init_rstPin,
-    int     init_rstGpioNum
-)
+void RFID_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum)
 {
     spiBusNum       = init_spiBusNum;
     spiChipSelect   = init_spiChipSelect;
