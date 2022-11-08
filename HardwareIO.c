@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -181,9 +182,9 @@ int I2C_initBus(int bus, int addr)
     return i2cFileDesc;
 }
 
-void I2C_writeReg(int i2cFileDesc, unsigned char addr, unsigned char value)
+void I2C_writeReg(int i2cFileDesc, uint8_t addr, uint8_t value)
 {
-    unsigned char buff[2];
+    uint8_t buff[2];
 
     buff[0] = addr;
     buff[1] = value;
@@ -196,7 +197,7 @@ void I2C_writeReg(int i2cFileDesc, unsigned char addr, unsigned char value)
     }
 }
 
-unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr)
+uint8_t I2C_readReg(int i2cFileDesc, uint8_t addr)
 {
     // To read a register, must first write the address
     int res = write(i2cFileDesc, &addr, sizeof(addr));
@@ -253,7 +254,7 @@ int SPI_initPort(
     }
 
     configPin(SPI_PORTS[port].cs0,  "spi_cs");
-    if(SPI_PORTS[port].cs1 != "none") {
+    if(!strcmp(SPI_PORTS[port].cs1, "none")) {
         configPin(SPI_PORTS[port].cs1,  "spi_cs");
     }
     configPin(SPI_PORTS[port].d0,   "spi");
@@ -313,7 +314,7 @@ int SPI_initPort(
     return spiFileDesc;
 }
 
-int SPI_transfer(int spiFileDesc, unsigned char *send, unsigned char *recv, int numBytes)
+int SPI_transfer(int spiFileDesc, uint8_t *send, uint8_t *recv, int numBytes)
 {
 	struct spi_ioc_transfer transfer = {
         .tx_buf = (unsigned long)send,

@@ -2,6 +2,8 @@
 #ifndef MFRC522_H
 #define MFRC522_H
 
+#include <stdint.h>
+
 /**
  * This module provides an API for the MFRC522 RFID Reader
  * The information in this file is informed by the data sheet and the Arduino Library
@@ -108,13 +110,13 @@ void RFID_init(
     int     init_rstGpioNum
 );
 
-void RFID_writeReg(unsigned char regAddr, unsigned char regData);
+void RFID_writeReg(uint8_t regAddr, uint8_t regData);
 
-unsigned char RFID_readReg(unsigned char regAddr);
+uint8_t RFID_readReg(uint8_t regAddr);
 
-void RFID_writeFIFO(unsigned char *writeBuffer, unsigned char bufferSize);
+void RFID_writeFIFO(uint8_t *writeBuffer, uint8_t bufferSize);
 
-void RFID_readFIFO(unsigned char *readBuffer, unsigned char bufferSize);
+void RFID_readFIFO(uint8_t *readBuffer, uint8_t bufferSize);
 
 void RFID_test(void);
 

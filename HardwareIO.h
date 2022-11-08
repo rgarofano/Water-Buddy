@@ -2,6 +2,8 @@
 #ifndef HARDWAREIO_H
 #define HARDWAREIO_H
 
+#include <stdint.h>
+
 /**
  * This header file includes general functions for:
  * Byte Operations
@@ -88,9 +90,9 @@ static const i2c_port_t I2C_PORTS[] = {
 // Configures pins on the specified bus number for I2C
 int I2C_initBus(int bus, int addr);
 
-void I2C_writeReg(int i2cFileDesc, unsigned char addr, unsigned char value);
+void I2C_writeReg(int i2cFileDesc, uint8_t addr, uint8_t value);
 
-unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr);
+uint8_t I2C_readReg(int i2cFileDesc, uint8_t addr);
 
 
 
@@ -138,7 +140,6 @@ int SPI_initPort(
 
 // Returns the status
 // Status >= 0 is success, < 0 is error
-int SPI_transfer(int spiFileDesc, unsigned char *send, unsigned char *recv, int numBytes);
-
+int SPI_transfer(int spiFileDesc, uint8_t *send, uint8_t *recv, int numBytes);
 
 #endif
