@@ -13,13 +13,6 @@
 
 #include "MFRC522.h"
 
-static int      spiBusNum;
-static char*    rstPin;
-static int      rstGpioNum;
-static char*    sdaPin;
-
-static int spiFileDesc = -1;
-
 #define REG_READ_OP         1
 #define REG_WRITE_OP        0
 #define REG_OP_BIT          7
@@ -27,6 +20,13 @@ static int spiFileDesc = -1;
 #define REG_WRITE_OP_MASK   (REG_WRITE_OP << REG_OP_BIT)
 
 #define REG_ADDR_BIT        1
+
+static int      spiBusNum;
+static int      spiChipSelect;
+static char*    rstPin;
+static int      rstGpioNum;
+
+static int spiFileDesc = -1;
 
 
 
@@ -36,38 +36,28 @@ static int spiFileDesc = -1;
 #define RFID_RST_PIN "p9_11"
 #define RFID_RST_GPIO_NUM 30
 
-#define RFID_IRQ_PIN
-#define RFID_IRQ_GPIO_NUM
-
-// MISO, Master In Slave Out
-#define RFID_MISO_PIN "p9_29" // SPI1_D0
-
-// MOSI, Master Out Slave In
-#define RFID_MOSI_PIN "p9_30" // SPI1_D1
-
-// SCK, Clock
-#define RFID_SCK_PIN "p9_31" // SPI1_SCLK
-
-// SDA/SS, Slave Select
-#define RFID_SDA_PIN "p9_28" // SPI1_CS0
-
 void RFID_init(
     int     init_spiBusNum,
+    int     init_spiChipSelect,
     char*   init_rstPin,
-    int     init_rstGpioNum,
-    char*   init_sdaPin
+    int     init_rstGpioNum
 )
 {
-    spiBusNum   = init_spiBusNum;
-    rstPin      = init_rstPin;
-    rstGpioNum  = init_rstGpioNum;
-    sdaPin      = init_sdaPin;
+    spiBusNum       = init_spiBusNum;
+    spiChipSelect   = init_spiChipSelect;
+    rstPin          = init_rstPin;
+    rstGpioNum      = init_rstGpioNum;
 
 
     configPinForGPIO(rstPin, rstGpioNum, GPIO_OUT);
     gpioWrite(rstGpioNum, 1);
 
-    spiFileDesc = SPI_initPort(spiBusNum, 0);
+    spiFileDesc = SPI_initPort(
+        spiBusNum,
+        0,
+        SPI_MODE_DEFAULT,
+        BITS_PER_WORD_DEFAULT,
+        SPEED_HZ_DEFAULT);
 }
 
 unsigned char RFID_readReg(unsigned char regAddr)
@@ -101,22 +91,11 @@ unsigned char RFID_writeReg(unsigned char regAddr, unsigned char regData)
     return SPI_transfer(spiFileDesc, sendBuf, recvBuf, NUM_BYTES);
 }
 
-// From https://www.emcraft.com/stm32f769i-discovery-board/accessing-spi-devices-in-linux
-static void test1(void)
+void RFID_test(void)
 {
+    RFID_init(1, 0, "p9_11", 30);
+
     unsigned char data = RFID_readReg(VersionReg);
 
     printf("data: %02x\n", data);
-}
-
-void RFID_test(void)
-{
-    RFID_init(
-        RFID_SPI_NUM,
-        RFID_RST_PIN,
-        RFID_RST_GPIO_NUM,
-        RFID_SDA_PIN
-    );
-
-    test1();
 }

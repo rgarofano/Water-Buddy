@@ -221,7 +221,13 @@ unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr)
 
 
 // SPI
-int SPI_initPort(int port, int chipSelect)
+int SPI_initPort(
+    int port,
+    int chipSelect,
+    int spiMode,
+    int bitsPerWord,
+    int speedHz
+)
 {
     switch(port) {
         case 0:
@@ -262,13 +268,9 @@ int SPI_initPort(int port, int chipSelect)
     }
 
     // Set port parameters
-    int errorCheck = 0;
-    int spiMode = 0;
-    int bitsPerWord = 8;
-    int speedHz = 500000;
 
 	// SPI mode
-	errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_MODE, &spiMode);
+	int errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_MODE, &spiMode);
 	if (errorCheck < 0) {
 		printf("can't set spi mode");
         exit(1);

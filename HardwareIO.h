@@ -96,6 +96,10 @@ unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr);
 
 // SPI
 #define NUM_SPI_BUSES 2
+#define SPI_MODE_DEFAULT 0
+#define BITS_PER_WORD_DEFAULT 8
+#define SPEED_HZ_DEFAULT 500000
+
 typedef struct {
     char *cs0;
     char *cs1;
@@ -124,7 +128,13 @@ static const spi_port_t SPI_PORTS[] = {
 // Configures pins associated with the specified port number for spi
 // Opens the file associated with that port and the specified chipSelect number
 // Returns the file descriptor
-int SPI_initPort(int port, int chipSelect);
+int SPI_initPort(
+    int port,
+    int chipSelect,
+    int spiMode,
+    int bitsPerWord,
+    int speedHz
+);
 
 // Returns the status
 // Status >= 0 is success, < 0 is error
