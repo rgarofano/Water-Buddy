@@ -55,10 +55,11 @@ void RFID_init(
         0,
         SPI_MODE_DEFAULT,
         BITS_PER_WORD_DEFAULT,
-        SPEED_HZ_DEFAULT);
+        SPEED_HZ_DEFAULT
+    );
 }
 
-void RFID_writeReg(uint8_t regAddr, uint8_t regData)
+void RFID_writeReg(enum MFRC522_Register regAddr, uint8_t regData)
 {
     #define NUM_BYTES 2
 
@@ -73,7 +74,7 @@ void RFID_writeReg(uint8_t regAddr, uint8_t regData)
     SPI_transfer(spiFileDesc, sendBuf, recvBuf, NUM_BYTES);
 }
 
-uint8_t RFID_readReg(uint8_t regAddr)
+uint8_t RFID_readReg(enum MFRC522_Register regAddr)
 {
     #define NUM_BYTES 2
 

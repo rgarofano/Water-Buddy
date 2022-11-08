@@ -110,9 +110,9 @@ void RFID_init(
     int     init_rstGpioNum
 );
 
-void RFID_writeReg(uint8_t regAddr, uint8_t regData);
+void RFID_writeReg(enum MFRC522_Register regAddr, uint8_t regData);
 
-uint8_t RFID_readReg(uint8_t regAddr);
+uint8_t RFID_readReg(enum MFRC522_Register regAddr);
 
 void RFID_writeFIFO(uint8_t *writeBuffer, uint8_t bufferSize);
 
