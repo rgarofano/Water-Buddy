@@ -108,9 +108,13 @@ void RFID_init(
     int     init_rstGpioNum
 );
 
+void RFID_writeReg(unsigned char regAddr, unsigned char regData);
+
 unsigned char RFID_readReg(unsigned char regAddr);
 
-unsigned char RFID_writeReg(unsigned char regAddr, unsigned char regData);
+void RFID_writeFIFO(unsigned char *writeBuffer, unsigned char bufferSize);
+
+void RFID_readFIFO(unsigned char *readBuffer, unsigned char bufferSize);
 
 void RFID_test(void);
 

@@ -60,6 +60,21 @@ void RFID_init(
         SPEED_HZ_DEFAULT);
 }
 
+void RFID_writeReg(unsigned char regAddr, unsigned char regData)
+{
+    #define NUM_BYTES 2
+
+    unsigned char sendBuf[NUM_BYTES];
+    // Address byte (See section 8.1.2.3 of Doc)
+    sendBuf[0] = (REG_WRITE_OP_MASK | (regAddr << REG_ADDR_BIT));
+    // Data byte
+    sendBuf[1] = regData;
+
+	unsigned char recvBuf[NUM_BYTES] = {0};
+
+    SPI_transfer(spiFileDesc, sendBuf, recvBuf, NUM_BYTES);
+}
+
 unsigned char RFID_readReg(unsigned char regAddr)
 {
     #define NUM_BYTES 2
@@ -67,6 +82,7 @@ unsigned char RFID_readReg(unsigned char regAddr)
     unsigned char sendBuf[NUM_BYTES];
     // Address byte (See section 8.1.2.3 of Doc)
     sendBuf[0] = (REG_READ_OP_MASK | (regAddr << REG_ADDR_BIT));
+    // Second address byte (set 0 to stop reading) 
     sendBuf[1] = 0x00;
 
 	unsigned char recvBuf[NUM_BYTES] = {0};
@@ -77,25 +93,58 @@ unsigned char RFID_readReg(unsigned char regAddr)
     return recvBuf[1];
 }
 
-unsigned char RFID_writeReg(unsigned char regAddr, unsigned char regData)
+void RFID_writeFIFO(unsigned char *writeBuffer, unsigned char bufferSize)
 {
-    #define NUM_BYTES 2
-
-    unsigned char sendBuf[NUM_BYTES];
+    unsigned char transferSize = bufferSize + 1; // increment to include initial address byte
+    unsigned char *sendBuf = malloc(transferSize);
+    unsigned char *recvBuf = malloc(transferSize);
     // Address byte (See section 8.1.2.3 of Doc)
-    sendBuf[0] = (REG_READ_OP_MASK | (regAddr << REG_ADDR_BIT));
-    sendBuf[1] = regData;
+    sendBuf[0] = (REG_WRITE_OP_MASK | (FIFODataReg << REG_ADDR_BIT));
+    for(int i = 0; i < bufferSize; i++) {
+        sendBuf[i + 1] = writeBuffer[i];
+    }
 
-	unsigned char recvBuf[NUM_BYTES] = {0};
+    SPI_transfer(spiFileDesc, sendBuf, recvBuf, transferSize);
+}
 
-    return SPI_transfer(spiFileDesc, sendBuf, recvBuf, NUM_BYTES);
+void RFID_readFIFO(unsigned char *readBuffer, unsigned char bufferSize)
+{
+    unsigned char transferSize = bufferSize + 1; // increment to include initial address byte
+    unsigned char *sendBuf = malloc(transferSize);
+    unsigned char *recvBuf = malloc(transferSize);
+    // Address byte (See section 8.1.2.3 of Doc)
+    for(int i = 0; i < transferSize - 1; i++) {
+        sendBuf[i] = (REG_READ_OP_MASK | (FIFODataReg << REG_ADDR_BIT));
+    }
+    sendBuf[transferSize - 1] = 0;
+
+    SPI_transfer(spiFileDesc, sendBuf, recvBuf, transferSize);
+
+    for(int i = 0; i < bufferSize; i++) {
+        readBuffer[i] = recvBuf[i + 1];
+    }
 }
 
 void RFID_test(void)
 {
     RFID_init(1, 0, "p9_11", 30);
 
-    unsigned char data = RFID_readReg(VersionReg);
+    int length = 6;
 
-    printf("data: %02x\n", data);
+    unsigned char *writeData = malloc(length);
+
+    for(int i = 0; i < length; i++) {
+        writeData[i] = i * 4;
+    }
+
+    RFID_writeFIFO(writeData, (unsigned char)length);
+
+    unsigned char *readData = malloc(length);
+
+    RFID_readFIFO(readData, (unsigned char)length);
+
+    for(int i = 0; i < length; i++) {
+        printf("%d ", readData[i]);
+    }
+    printf("\n");
 }
