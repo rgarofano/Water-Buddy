@@ -221,6 +221,9 @@ unsigned char I2C_readReg(int i2cFileDesc, unsigned char addr)
 
 
 // SPI
+
+// The code for setting port parameters was taken and modified from spidev_test.c here:
+// https://github.com/derekmolloy/exploringBB/blob/version2/chp08/spi/spidev_test/spidev_test.c
 int SPI_initPort(
     int port,
     int chipSelect,
@@ -229,6 +232,8 @@ int SPI_initPort(
     int speedHz
 )
 {
+    // SPI0 has 1 peripheral slot {0}
+    // SPI1 has 2 peripheral slots {0, 1}
     switch(port) {
         case 0:
             if(chipSelect != 0) {
@@ -248,7 +253,7 @@ int SPI_initPort(
     }
 
     configPin(SPI_PORTS[port].cs0,  "spi_cs");
-    if(port != 0) {
+    if(SPI_PORTS[port].cs1 != "none") {
         configPin(SPI_PORTS[port].cs1,  "spi_cs");
     }
     configPin(SPI_PORTS[port].d0,   "spi");
@@ -272,42 +277,38 @@ int SPI_initPort(
 	// SPI mode
 	int errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_MODE, &spiMode);
 	if (errorCheck < 0) {
-		printf("can't set spi mode");
+		printf("Set SPI mode failed");
         exit(1);
     }
 	errorCheck = ioctl(spiFileDesc, SPI_IOC_RD_MODE, &spiMode);
 	if (errorCheck < 0) {
-		printf("can't get spi mode");
+		printf("Get SPI mode failed");
         exit(1);
     }
 
 	// Bits per word
 	errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_BITS_PER_WORD, &bitsPerWord);
 	if (errorCheck < 0) {
-		printf("can't set bits per word");
+		printf("Set bits per word failed");
         exit(1);
     }
 	errorCheck = ioctl(spiFileDesc, SPI_IOC_RD_BITS_PER_WORD, &bitsPerWord);
 	if (errorCheck < 0) {
-		printf("can't get bits per word");
+		printf("Get bits per word failed");
         exit(1);
     }
 
 	// Max Speed (Hz)
 	errorCheck = ioctl(spiFileDesc, SPI_IOC_WR_MAX_SPEED_HZ, &speedHz);
 	if (errorCheck < 0) {
-		printf("can't set max speed hz");
+		printf("Set max speed hz failed");
         exit(1);
     }
 	errorCheck = ioctl(spiFileDesc, SPI_IOC_RD_MAX_SPEED_HZ, &speedHz);
 	if (errorCheck < 0) {
-		printf("can't get max speed hz");
+		printf("Get max speed hz failed");
         exit(1);
     }
-
-	// printf("spi mode: %d\n", mode);
-	// printf("bits per word: %d\n", bitsPerWord);
-	// printf("max speed: %d Hz (%d KHz)\n", speedHz, speedHz/1000);
 
     return spiFileDesc;
 }
