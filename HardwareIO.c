@@ -310,3 +310,22 @@ int SPI_initPort(int port, int chipSelect)
     return spiFileDesc;
 }
 
+int SPI_transfer(int spiFileDesc, unsigned char *send, unsigned char *recv, int numBytes)
+{
+	struct spi_ioc_transfer transfer = {
+        .tx_buf = (unsigned long)send,
+        .rx_buf = (unsigned long)recv,
+        .len = numBytes,
+        .delay_usecs = 0,
+        .speed_hz = 500000,
+        .bits_per_word = 8,
+    };
+
+	int status = ioctl(spiFileDesc, SPI_IOC_MESSAGE(1), &transfer);
+	if (status < 0) {
+		perror("SPI_IOC_MESSAGE");
+    }
+
+    return status;
+}
+

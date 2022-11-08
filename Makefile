@@ -3,7 +3,7 @@ CC = arm-linux-gnueabihf-gcc
 CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L# -pthread -Werror
 # -Werror: treat warnings as errors
 
-FILE_LIST = main.c SystemTools.c HardwareIO.c RFID.c
+FILE_LIST = main.c SystemTools.c HardwareIO.c MFRC522.c
 OUTPUT = main
 
 all: clean $(OUTPUT)
