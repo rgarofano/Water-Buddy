@@ -8,7 +8,8 @@
 #include <errno.h>
 
 #include "SystemTools.h"
-#include "HardwareIO.h"
+#include "GPIO.h"
+#include "SPI.h"
 
 #include "MFRC522.h"
 
@@ -154,7 +155,7 @@ int RFID_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, 
 
     // Poll for Receive Interrupt
     bool recvSuccess = false;
-    for(int i = 0; i < 4000 && !recvSuccess; i++) {
+    for(int i = 0; i < 2000 && !recvSuccess; i++) {
         uint8_t irqVal = RFID_readReg(ComIrqReg);
         recvSuccess = irqVal & (ComIrqReg_RXIRQ_MASK | ComIrqReg_IDLEIRQ_MASK);
         // if(irqVal & ComIrqReg_TIMERIRQ_MASK) {
@@ -163,7 +164,8 @@ int RFID_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, 
         sleepForUs(10);
     }
     if(!recvSuccess) {
-        return -2;
+        RFID_writeReg(CommandReg, Idle);
+        return STATUS_TIMEOUT;
     }
     
     // Read FIFO
@@ -180,7 +182,7 @@ int RFID_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, 
         }
     }
 
-    return 0;
+    return STATUS_OK;
 }
 
 void RFID_request(uint8_t req)

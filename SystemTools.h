@@ -29,5 +29,16 @@ void sleepForUs(long long sleepTimeUs);
 // Exits with exitcode 1 if it fails.
 FILE* fopenWithCheck(const char* fileName, const char* accessType);
 
+// Bit Operations
+#define BITS_PER_BYTE 8
+
+// Returns the byte rotated to the right by n bits
+char rotateCharRight(char byte, int n);
+
+// Returns the byte rotated to the left by n bits
+char rotateCharLeft(char bbyte, int n);
+
+// Pin Config
+void configPin(const char* pin, const char* config);
 
 #endif
