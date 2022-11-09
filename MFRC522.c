@@ -199,24 +199,28 @@ void RFID_request(uint8_t req)
 
 void RFID_antiColl(uint8_t *uidBuffer, uint8_t *uidSize)
 {
-    #define BUFFER_LENGTH 9
-    uint8_t *sendBuf = malloc(BUFFER_LENGTH);
-    memset(sendBuf, 0, BUFFER_LENGTH);
+    #define SEND_LENGTH 2
+    #define RECV_LENGTH 9
+    uint8_t *sendBuf = malloc(SEND_LENGTH);
+    memset(sendBuf, 0, SEND_LENGTH);
     sendBuf[0] = PICC_SEL_CL1;
     sendBuf[1] = 0x20; // Number of valid bytes in buffer byte: 4:7 = num complete Bytes, 0:3 = extra bits
 
-    for(int i = 0; i < BUFFER_LENGTH; i++) {
+    RFID_writeReg(BitFramingReg, 0x00);
+
+    printf("anticoll: ");
+    for(int i = 0; i < SEND_LENGTH; i++) {
         printf("%02x ", sendBuf[i]);
     }
     printf("\n");
 
-    uint8_t *recvBuf = malloc(BUFFER_LENGTH);
+    uint8_t *recvBuf = malloc(RECV_LENGTH);
 
-    int status = RFID_transceive(sendBuf, BUFFER_LENGTH, recvBuf, NULL);
+    int status = RFID_transceive(sendBuf, SEND_LENGTH, recvBuf, NULL);
     printf("antiColl status: %d\n", status);
 
-    if(uidSize && *uidSize > BUFFER_LENGTH) {
-        *uidSize = BUFFER_LENGTH;
+    if(uidSize && *uidSize > RECV_LENGTH) {
+        *uidSize = RECV_LENGTH;
     }
     for(int i = 0; i < *uidSize; i++) {
         uidBuffer[i] = recvBuf[i];

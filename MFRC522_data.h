@@ -86,7 +86,7 @@ enum MFRC522_Register {
 
 #define REG_ADDR_BIT        1
 
-// Registers Specific Parameters
+// Register Specific Parameters
 #define BitFramingReg_STARTSEND_BIT 7
 
 #define ComIrqReg_CLEAR_ALL_IRQS 0x7F
