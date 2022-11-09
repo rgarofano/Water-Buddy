@@ -25,12 +25,12 @@ static int spiFileDesc = -1;
 
 
 // Pin Defines
-#define RFID_SPI_NUM 1
+#define READER_SPI_NUM 1
 
-#define RFID_RST_PIN "p9_11"
-#define RFID_RST_GPIO_NUM 30
+#define READER_RST_PIN "p9_11"
+#define READER_RST_GPIO_NUM 30
 
-void RFID_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum)
+void Reader_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum)
 {
     spiBusNum       = init_spiBusNum;
     spiChipSelect   = init_spiChipSelect;
@@ -52,20 +52,20 @@ void RFID_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, in
     );
 
     // Default Values?
-    RFID_writeReg(TModeReg, 0x80);
-    RFID_writeReg(TPrescalerReg, 0xA9);
-    RFID_writeReg(TReloadRegH, 0x03);
-    RFID_writeReg(TReloadRegL, 0xE8);
-    RFID_writeReg(TxASKReg, 0x40);
-    RFID_writeReg(ModeReg, 0x3D);
+    Reader_writeReg(TModeReg, 0x80);
+    Reader_writeReg(TPrescalerReg, 0xA9);
+    Reader_writeReg(TReloadRegH, 0x03);
+    Reader_writeReg(TReloadRegL, 0xE8);
+    Reader_writeReg(TxASKReg, 0x40);
+    Reader_writeReg(ModeReg, 0x3D);
 
     // Turn antenna on
-    uint8_t regVal = RFID_readReg(TxControlReg);
-    RFID_writeReg(TxControlReg, regVal | 0x03);
+    uint8_t regVal = Reader_readReg(TxControlReg);
+    Reader_writeReg(TxControlReg, regVal | 0x03);
     sleepForMs(1);
 }
 
-void RFID_writeReg(enum MFRC522_Register regAddr, uint8_t regData)
+void Reader_writeReg(enum MFRC522_Register regAddr, uint8_t regData)
 {
     #define NUM_BYTES 2
 
@@ -80,7 +80,7 @@ void RFID_writeReg(enum MFRC522_Register regAddr, uint8_t regData)
     SPI_transfer(spiFileDesc, sendBuf, recvBuf, NUM_BYTES);
 }
 
-uint8_t RFID_readReg(enum MFRC522_Register regAddr)
+uint8_t Reader_readReg(enum MFRC522_Register regAddr)
 {
     #define NUM_BYTES 2
 
@@ -98,7 +98,7 @@ uint8_t RFID_readReg(enum MFRC522_Register regAddr)
     return recvBuf[1];
 }
 
-void RFID_writeFIFO(uint8_t *writeBuffer, uint8_t writeSize)
+void Reader_writeFIFO(uint8_t *writeBuffer, uint8_t writeSize)
 {
     uint8_t transferSize = writeSize + 1; // increment to include initial address byte
     uint8_t *sendBuf = malloc(transferSize);
@@ -115,7 +115,7 @@ void RFID_writeFIFO(uint8_t *writeBuffer, uint8_t writeSize)
     free(recvBuf);
 }
 
-void RFID_readFIFO(uint8_t *readBuffer, uint8_t readSize)
+void Reader_readFIFO(uint8_t *readBuffer, uint8_t readSize)
 {
     uint8_t transferSize = readSize + 1; // increment to include initial address byte
     uint8_t *sendBuf = malloc(transferSize);
@@ -136,27 +136,27 @@ void RFID_readFIFO(uint8_t *readBuffer, uint8_t readSize)
     free(recvBuf);
 }
 
-int RFID_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, uint8_t *recvSize)
+enum MFRC522_StatusCode Reader_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, uint8_t *recvSize)
 {
     // Get ready for transceive
-    RFID_writeReg(CollReg, Idle); // Stop Active Command
-    RFID_writeReg(FIFOLevelReg, 1 << FIFOLevelReg_FLUSHBUFFER_BIT); // Flush FIFO
-    RFID_writeReg(ComIrqReg, ComIrqReg_CLEAR_ALL_IRQS); // Clear all IRQs
+    Reader_writeReg(CollReg, Idle); // Stop Active Command
+    Reader_writeReg(FIFOLevelReg, 1 << FIFOLevelReg_FLUSHBUFFER_BIT); // Flush FIFO
+    Reader_writeReg(ComIrqReg, ComIrqReg_CLEAR_ALL_IRQS); // Clear all IRQs
 
     // Write FIFO
-    RFID_writeFIFO(sendBuffer, sendSize);
+    Reader_writeFIFO(sendBuffer, sendSize);
 
     // Set Command
-    RFID_writeReg(CommandReg, Transceive);
+    Reader_writeReg(CommandReg, Transceive);
 
     // Start Transmission
-    uint8_t regData = RFID_readReg(BitFramingReg);
-    RFID_writeReg(BitFramingReg, regData | (1 << BitFramingReg_STARTSEND_BIT));
+    uint8_t regData = Reader_readReg(BitFramingReg);
+    Reader_writeReg(BitFramingReg, regData | (1 << BitFramingReg_STARTSEND_BIT));
 
     // Poll for Receive Interrupt
     bool recvSuccess = false;
     for(int i = 0; i < 2000 && !recvSuccess; i++) {
-        uint8_t irqVal = RFID_readReg(ComIrqReg);
+        uint8_t irqVal = Reader_readReg(ComIrqReg);
         recvSuccess = irqVal & (ComIrqReg_RXIRQ_MASK | ComIrqReg_IDLEIRQ_MASK);
         // if(irqVal & ComIrqReg_TIMERIRQ_MASK) {
         //     return -1;
@@ -164,60 +164,50 @@ int RFID_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, 
         sleepForUs(10);
     }
     if(!recvSuccess) {
-        RFID_writeReg(CommandReg, Idle);
+        Reader_writeReg(CommandReg, Idle);
         return STATUS_TIMEOUT;
     }
     
     // Read FIFO
-    uint8_t fifoLevel = RFID_readReg(FIFOLevelReg);
+    uint8_t fifoLevel = Reader_readReg(FIFOLevelReg);
     if(recvBuffer) {
-        RFID_readFIFO(recvBuffer, fifoLevel);
+        Reader_readFIFO(recvBuffer, fifoLevel);
         if(recvSize) {
             *recvSize = fifoLevel;
         }
     }
-    else {
-        if(recvSize) {
-            *recvSize = 0;
-        }
+    else if(recvSize) {
+        *recvSize = 0;
     }
 
     return STATUS_OK;
 }
 
-void RFID_request(uint8_t req)
+enum MFRC522_StatusCode Reader_piccRequest(enum MFRC522_PICC_Command piccRequest)
 {
-    RFID_writeReg(BitFramingReg, 0x07);
-
-    uint8_t *sendReq = malloc(1);
-    sendReq[0] = req;
-
-    // (status, backData, backBits) = self.MFRC522_ToCard(self.PCD_TRANSCEIVE, TagType)
-    int status = RFID_transceive(sendReq, 1, NULL, 0);
-    printf("request status: %d\n", status);
+    Reader_writeReg(BitFramingReg, 0x07);
+    uint8_t sendReq = (uint8_t)piccRequest;
+    return Reader_transceive(&sendReq, 1, NULL, 0);
 }
 
-void RFID_antiColl(uint8_t *uidBuffer, uint8_t *uidSize)
+enum MFRC522_StatusCode Reader_getUID(uint8_t *uidBuffer, uint8_t *uidSize)
 {
     #define SEND_LENGTH 2
-    #define RECV_LENGTH 9
+    #define RECV_LENGTH 5
     uint8_t *sendBuf = malloc(SEND_LENGTH);
-    memset(sendBuf, 0, SEND_LENGTH);
+    uint8_t *recvBuf = malloc(RECV_LENGTH);
+    uint8_t recvSize = RECV_LENGTH;
+
     sendBuf[0] = PICC_SEL_CL1;
     sendBuf[1] = 0x20; // Number of valid bytes in buffer byte: 4:7 = num complete Bytes, 0:3 = extra bits
 
-    RFID_writeReg(BitFramingReg, 0x00);
+    Reader_writeReg(BitFramingReg, 0x00);
 
-    printf("anticoll: ");
-    for(int i = 0; i < SEND_LENGTH; i++) {
-        printf("%02x ", sendBuf[i]);
+    enum MFRC522_StatusCode status = Reader_transceive(sendBuf, SEND_LENGTH, recvBuf, &recvSize);
+
+    if(recvSize != RECV_LENGTH) {
+        return STATUS_ERROR;
     }
-    printf("\n");
-
-    uint8_t *recvBuf = malloc(RECV_LENGTH);
-
-    int status = RFID_transceive(sendBuf, SEND_LENGTH, recvBuf, NULL);
-    printf("antiColl status: %d\n", status);
 
     if(uidSize && *uidSize > RECV_LENGTH) {
         *uidSize = RECV_LENGTH;
@@ -228,11 +218,13 @@ void RFID_antiColl(uint8_t *uidBuffer, uint8_t *uidSize)
 
     free(sendBuf);
     free(recvBuf);
+
+    return status;
 }
 
 void testFIFO(void)
 {
-    RFID_init(1, 0, "p9_11", 30);
+    Reader_init(1, 0, "p9_11", 30);
 
     uint8_t size = 6;
 
@@ -243,8 +235,8 @@ void testFIFO(void)
         writeBuffer[i] = 2 * i + 3;
     }
 
-    RFID_writeFIFO(writeBuffer, size);
-    RFID_readFIFO(readBuffer, size);
+    Reader_writeFIFO(writeBuffer, size);
+    Reader_readFIFO(readBuffer, size);
     
     for(int i = 0; i < size; i++) {
         printf("%d ", readBuffer[i]);
@@ -254,15 +246,15 @@ void testFIFO(void)
 
 void testAntiColl(void)
 {
-    RFID_init(1, 0, "p9_11", 30);
+    Reader_init(1, 0, "p9_11", 30);
 
     uint8_t readSize = 16;
 
     uint8_t *readBuffer = malloc(readSize);
 
-    RFID_request(PICC_REQA);
+    Reader_piccRequest(PICC_REQA);
 
-    RFID_antiColl(readBuffer, &readSize);
+    Reader_getUID(readBuffer, &readSize);
 
     for(int i = 0; i < readSize; i++) {
         printf("%02x ", readBuffer[i]);
@@ -270,8 +262,7 @@ void testAntiColl(void)
     printf("\n");
 }
 
-void RFID_test(void)
+void Reader_test(void)
 {
-    // testFIFO();
     testAntiColl();
 }

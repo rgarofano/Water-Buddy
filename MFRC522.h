@@ -23,7 +23,7 @@
  * - PICC: Proximity Inductive Coupling Card (RFID Tag)
  */
 
-enum StatusCode {
+enum MFRC522_StatusCode {
     STATUS_OK				=  0,	// Success
     STATUS_ERROR			= -1,	// Error in communication
     STATUS_COLLISION		= -2,	// Collission detected
@@ -35,19 +35,23 @@ enum StatusCode {
     STATUS_MIFARE_NACK		= -8	// A MIFARE PICC responded with NAK.
 };
 
-void RFID_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum);
+void Reader_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum);
 
-void RFID_writeReg(enum MFRC522_Register regAddr, uint8_t regData);
+void Reader_writeReg(enum MFRC522_Register regAddr, uint8_t regData);
 
-uint8_t RFID_readReg(enum MFRC522_Register regAddr);
+uint8_t Reader_readReg(enum MFRC522_Register regAddr);
 
-void RFID_writeFIFO(uint8_t *writeBuffer, uint8_t writeSize);
+void Reader_writeFIFO(uint8_t *writeBuffer, uint8_t writeSize);
 
-void RFID_readFIFO(uint8_t *readBuffer, uint8_t readSize);
+void Reader_readFIFO(uint8_t *readBuffer, uint8_t readSize);
 
-enum StatusCode RFID_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, uint8_t *recvSize);
+enum MFRC522_StatusCode Reader_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, uint8_t *recvSize);
 
-void RFID_test(void);
+enum MFRC522_StatusCode Reader_piccRequest(enum MFRC522_PICC_Command piccRequest);
+
+enum MFRC522_StatusCode Reader_getUID(uint8_t *uidBuffer, uint8_t *uidSize);
+
+void Reader_test(void);
 
 
 #endif
