@@ -66,7 +66,7 @@ static void testGetUID(void)
 
     uint64_t uid = 0;
 
-    int status = RFIDReader_piccCommand(PICC_REQA);
+    int status = RFIDReader_sendPiccCommand(PICC_REQA);
     if(status < 0) {
         printf("Error: PICC Request Failed\n");
     }

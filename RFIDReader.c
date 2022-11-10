@@ -197,11 +197,11 @@ enum MFRC522_StatusCode RFIDReader_transceive(uint8_t *sendBuffer, uint8_t sendS
     return status;
 }
 
-enum MFRC522_StatusCode RFIDReader_piccCommand(enum MFRC522_PICC_Command piccRequest)
+enum MFRC522_StatusCode RFIDReader_sendPiccCommand(enum MFRC522_PICC_Command piccCommand)
 {
     #define BITS_TO_SEND 7 // Taken from the Arduino Library
     RFIDReader_writeReg(BitFramingReg, BITS_TO_SEND << BITFRAMINGREG_TXLASTBITS_BIT);
-    uint8_t sendReq = (uint8_t)piccRequest;
+    uint8_t sendReq = (uint8_t)piccCommand;
     return RFIDReader_transceive(&sendReq, 1, NULL, 0);
 }
 
@@ -240,7 +240,7 @@ enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid)
 
 enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid)
 {
-    enum MFRC522_StatusCode status = RFIDReader_piccCommand(PICC_REQA);
+    enum MFRC522_StatusCode status = RFIDReader_sendPiccCommand(PICC_REQA);
     if(status != STATUS_OK) {
         return status;
     }
