@@ -1,11 +1,11 @@
 
 #include <stdio.h>
 
-#include "MFRC522.h"
+#include "RFIDReader.h"
 
 int main()
 {
-    Reader_test();
+    RFIDReader_test();
 
     return 0;
 }

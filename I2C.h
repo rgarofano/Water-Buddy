@@ -9,6 +9,7 @@ typedef struct {
     char *sda;
 } i2c_port_t;
 
+// TODO: Add other I2C ports, or change the way we init ports since some ports have more than one sda pin etc
 static const i2c_port_t I2C_PORTS[] = {
     { // I2C0
         .scl = "p9.17",

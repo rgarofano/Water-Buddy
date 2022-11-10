@@ -1,6 +1,24 @@
 
-#ifndef MFRC522_DATA_H
-#define MFRC522_DATA_H
+#ifndef RFIDREADER_DATA_H
+#define RFIDREADER_DATA_H
+
+/**
+ * This header file provides information about MFRC522 registers and commands
+ * The information in this file is informed by the data sheet and the Arduino Library
+ * 
+ * Here is the Arduino library for the MFRC522:
+ * https://github.com/miguelbalboa/rfid/tree/master/src
+ * Items taken from the Arduino library:
+ * - Register enum table
+ * - PCD Command enum table
+ * - PICC Command enum table
+ * - Status Code enum table (in MFRC522.h)
+ * - Transmission/Receiving Mode Settings (Set in MFRC522.c)
+ *  
+ * For reference:
+ * - PCD: Proximity Coupling Device (RFID Reader Chip)
+ * - PICC: Proximity Inductive Coupling Card (RFID Tag)
+ */
 
 // Register Addresses (See section 9 of data sheet)
 enum MFRC522_Register {
@@ -87,14 +105,28 @@ enum MFRC522_Register {
 #define REG_ADDR_BIT        1
 
 // Register Specific Parameters
-#define BitFramingReg_STARTSEND_BIT 7
+#define BITFRAMINGREG_STARTSEND_BIT 7
+#define BITFRAMINGREG_TXLASTBITS_BIT 0
 
-#define ComIrqReg_CLEAR_ALL_IRQS 0x7F
-#define ComIrqReg_RXIRQ_MASK (1 << 5) // Bit 5
-#define ComIrqReg_IDLEIRQ_MASK (1 << 4) // Bit 4
-#define ComIrqReg_TIMERIRQ_MASK 1 // Bit 0
+#define COMIRQREG_CLEAR_ALL_IRQS 0x7F
+#define COMIRQREG_RXIRQ_MASK (1 << 5) // Bit 5
+#define COMIRQREG_IDLEIRQ_MASK (1 << 4) // Bit 4
+#define COMIRQREG_TIMERIRQ_MASK 1 // Bit 0
 
-#define FIFOLevelReg_FLUSHBUFFER_BIT 7
+#define FIFOLEVELREG_FLUSHBUFFER_BIT 7
+
+#define MODEREG_MSBFIRST_BIT 7
+#define MODEREG_TXWAITRF_BIT 5
+#define MODEREG_POLMFIN_BIT 3
+#define MODEREG_CRCPRESET_BIT 0
+
+#define TIMER_CLK_FREQ_HZ 13560000 // 13.56 MHz
+#define TMODEREG_TAUTO_BIT 7
+#define TMODEREG_TPRESCALER_HI_BIT 0
+
+#define TXASKREG_FORCE100ASK_BIT 6
+
+#define TXCONTROLREG_ANTENNA_ON_MASK 0x03
 
 
 
@@ -112,7 +144,8 @@ enum MFRC522_PCD_Command {
 	SoftReset			= 0x0F	    // resets the MFRC522
 };
 
-
+// AntiCollision Transmission Buffer params
+#define ANTICOLL_BUF_B2_VALID_BYTES_IN_BUFFER_BIT 4
 
 // Commands sent to the PICC
 // The commands used by the PCD to manage communication with several PICCs (ISO 14443-3, Type A, section 6.4)
