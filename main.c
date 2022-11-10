@@ -5,7 +5,5 @@
 
 int main()
 {
-    RFIDReader_test();
-
     return 0;
 }

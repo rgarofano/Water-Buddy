@@ -13,16 +13,16 @@
 
 
 // GPIO
-#define SLEEP_TIME_AFTER_EXPORT_MS 1000
-static void exportGpioNum(const int gpioNum)
-{
-    FILE *gpioExportFile = fopenWithCheck("/sys/class/gpio/export", "w");
-    fprintf(gpioExportFile, "%d", gpioNum);
-    fclose(gpioExportFile);
+// #define SLEEP_TIME_AFTER_EXPORT_MS 1000
+// static void exportGpioNum(const int gpioNum)
+// {
+//     FILE *gpioExportFile = fopenWithCheck("/sys/class/gpio/export", "w");
+//     fprintf(gpioExportFile, "%d", gpioNum);
+//     fclose(gpioExportFile);
 
-    // Must sleep for a short time while the necessary directories for the specified gpioNum are created
-    sleepForMs(SLEEP_TIME_AFTER_EXPORT_MS);
-}
+//     // Must sleep for a short time while the necessary directories for the specified gpioNum are created
+//     sleepForMs(SLEEP_TIME_AFTER_EXPORT_MS);
+// }
 
 void configPinForGPIO(const char* pin, const int gpioNum, const char* gpioDirection)
 {

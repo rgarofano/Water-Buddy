@@ -205,7 +205,7 @@ enum MFRC522_StatusCode RFIDReader_piccRequest(enum MFRC522_PICC_Command piccReq
     return RFIDReader_transceive(&sendReq, 1, NULL, 0);
 }
 
-enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uid_t *uid)
+enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid)
 {
     if(!uid) {
         return STATUS_NO_ROOM;
@@ -238,7 +238,7 @@ enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uid_t *uid)
     return status;
 }
 
-enum MFRC522_StatusCode RFIDReader_getImmediateUID(uid_t *uid)
+enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid)
 {
     enum MFRC522_StatusCode status = RFIDReader_piccRequest(PICC_REQA);
     if(status != STATUS_OK) {
@@ -247,65 +247,4 @@ enum MFRC522_StatusCode RFIDReader_getImmediateUID(uid_t *uid)
 
     status = RFIDReader_selectPICCAndGetUID(uid);
     return status;
-}
-
-static void testFIFO(void)
-{
-    RFIDReader_init(1, 0, "p9_11", 30);
-
-    uint8_t size = 6;
-
-    uint8_t *writeBuffer = malloc(size);
-    uint8_t *readBuffer = malloc(size);
-
-    for(int i = 0; i < size; i++) {
-        writeBuffer[i] = 2 * i + 3;
-    }
-
-    RFIDReader_writeFIFO(writeBuffer, size);
-    RFIDReader_readFIFO(readBuffer, size);
-    
-    for(int i = 0; i < size; i++) {
-        printf("%d ", readBuffer[i]);
-    }
-    printf("\n");
-}
-
-static void testGetUID(void)
-{
-    RFIDReader_init(1, 0, "p9_11", 30);
-
-    uid_t *uid = malloc(sizeof(uid_t));
-
-    int status = RFIDReader_piccRequest(PICC_REQA);
-    if(status < 0) {
-        printf("Error: PICC Request Failed\n");
-    }
-
-    status = RFIDReader_selectPICCAndGetUID(uid);
-    if(status < 0) {
-        printf("Error: Get UID Failed\n");
-    }
-
-    printf("%llx\n", *uid);
-    printf("\n");
-}
-
-static void testGetImmediateUID(void)
-{
-    RFIDReader_init(1, 0, "p9_11", 30);
-
-    uid_t *uid = malloc(sizeof(uid_t));
-
-    int status = RFIDReader_getImmediateUID(uid);
-    if(status < 0) {
-        printf("Error: status %d\n", status);
-    }
-
-    printf("%llx\n", *uid);
-}
-
-void RFIDReader_test(void)
-{
-    testGetImmediateUID();
 }

@@ -38,8 +38,6 @@ enum MFRC522_StatusCode {
 
 #define UID_SIZE 5
 
-typedef unsigned long long uid_t;
-
 void RFIDReader_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum);
 
 void RFIDReader_writeReg(enum MFRC522_Register regAddr, uint8_t regData);
@@ -54,10 +52,8 @@ enum MFRC522_StatusCode RFIDReader_transceive(uint8_t *sendBuffer, uint8_t sendS
 
 enum MFRC522_StatusCode RFIDReader_piccRequest(enum MFRC522_PICC_Command piccRequest);
 
-enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uid_t *uid);
+enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid);
 
-enum MFRC522_StatusCode RFIDReader_getImmediateUID(uid_t *uid);
-
-void RFIDReader_test(void);
+enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid);
 
 #endif
