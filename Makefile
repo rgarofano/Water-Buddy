@@ -1,6 +1,6 @@
 
 CC = arm-linux-gnueabihf-gcc
-CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L# -pthread -Werror
+CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -pthread -Werror
 # -Werror: treat warnings as errors
 
 FILE_LIST = main.c SystemTools.c GPIO.c A2D.c I2C.c SPI.c RFIDReader.c
