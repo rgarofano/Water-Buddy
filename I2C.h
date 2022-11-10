@@ -2,6 +2,12 @@
 #ifndef I2C_H
 #define I2C_H
 
+/**
+ * I2C Module
+ * Provides an API for using the Beaglebone's I2C Ports.
+ * Allows for easy port initialization and register writing/reading.
+ */
+
 #include <stdint.h>
 
 typedef struct {
@@ -18,7 +24,7 @@ static const i2c_port_t I2C_PORTS[] = {
 };
 
 // Returns I2C File Descriptor of I2C bus
-// I2C bus number is in the range 1 to 3
+// I2C bus number must be in the range 1 to 3
 // Configures pins on the specified bus number for I2C
 int I2C_initBus(int bus, int addr);
 

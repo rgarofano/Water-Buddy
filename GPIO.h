@@ -2,26 +2,22 @@
 #ifndef GPIO_H
 #define GPIO_H
 
-#include <stdint.h>
-
 /**
- * This header file includes general functions for:
- * GPIO
- * Beaglebone's LEDs
+ * GPIO Module
+ * Provides an interface for configuring, reading, and writing any of the GPIO pins or LEDS on the Beaglebone.
  */
 
+#include <stdint.h>
 
-
-// GPIO
 #define GPIO_IN "in"
 #define GPIO_OUT "out"
 
 // A more specific version of configPin(pin, config)
-void configPinForGPIO(const char* pin, const int gpioNum, const char *direction);
+void GPIO_configPin(const char* pin, const int gpioNum, const char *direction);
 
-int gpioRead(int gpioNum);
+int GPIO_read(int gpioNum);
 
-void gpioWrite(int gpioNum, int value);
+void GPIO_write(int gpioNum, int value);
 
 
 
@@ -32,6 +28,6 @@ void gpioWrite(int gpioNum, int value);
 // static const char *LED_TRIGGER_DEFAULT[] = {"heartbeat", "mmc0", "cpu0", "mmc1"};
 
 // LED number is in the range 0 to 3
-void setLEDAttribute(const int LEDNum, const char* attribute, const char* value);
+void LED_setAttribute(const int LEDNum, const char* attribute, const char* value);
 
 #endif

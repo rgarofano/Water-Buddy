@@ -1,14 +1,11 @@
 
-#ifndef MFRC522_H
-#define MFRC522_H
-
-#include <stdint.h>
-
-#include "RFIDReader_data.h"
+#ifndef RFIDREADER_H
+#define RFIDREADER_H
 
 /**
- * This module provides an API for the MFRC522 RFID Reader
- * The information in this file is informed by the data sheet and the Arduino Library
+ * RFID Reader Module
+ * Provides an API for the MFRC522 RFID Reader.
+ * The information in this module is informed by the data sheet and the Arduino Library.
  * 
  * Here is the Arduino library for the MFRC522:
  * https://github.com/miguelbalboa/rfid/tree/master/src
@@ -19,10 +16,14 @@
  * - Status Code enum table
  * - Transmission/Receiving Mode Settings (Set in MFRC522.c)
  *  
- * For reference:
+ * Definition of terms:
  * - PCD: Proximity Coupling Device (RFID Reader Chip)
  * - PICC: Proximity Inductive Coupling Card (RFID Tag)
  */
+
+#include <stdint.h>
+
+#include "RFIDReader_data.h"
 
 enum MFRC522_StatusCode {
     STATUS_OK				=  0,	// Success
@@ -38,22 +39,38 @@ enum MFRC522_StatusCode {
 
 #define UID_SIZE 5
 
+// Configures the pins associated with the specified SPI bus number for SPI
+// Sets the MFRC522 reset pin high, initialized necessary registers, and turns the antenna on
 void RFIDReader_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstPin, int init_rstGpioNum);
 
 void RFIDReader_writeReg(enum MFRC522_Register regAddr, uint8_t regData);
 
 uint8_t RFIDReader_readReg(enum MFRC522_Register regAddr);
 
+// Writes writeSize bytes of writeBuffer to MFRC522's internal FIFO in order
 void RFIDReader_writeFIFO(uint8_t *writeBuffer, uint8_t writeSize);
 
+// Reads readSize bytes of the MFRC522's internal FIFO and writes them to readBuffer in order
+// Bytes in the FIFO are cleared as they are read
 void RFIDReader_readFIFO(uint8_t *readBuffer, uint8_t readSize);
 
+// Writes sendSize bytes of sendBuffer to the MFRC522's internal FIFO in order
+// Transmits all bytes in the FIFO to PICCs in the vicinity
+// Receives response and stores it in recvBuffer
+// Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
 enum MFRC522_StatusCode RFIDReader_transceive(uint8_t *sendBuffer, uint8_t sendSize, uint8_t *recvBuffer, uint8_t *recvSize);
 
-enum MFRC522_StatusCode RFIDReader_piccRequest(enum MFRC522_PICC_Command piccRequest);
+// Transmits a PICC command to PICCs in the vicinity
+// Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
+enum MFRC522_StatusCode RFIDReader_piccCommand(enum MFRC522_PICC_Command piccRequest);
 
+// Gets the UID of a PICC in the vicinity and stores it in uid
+// A Wakeup or Request PICC Command must be sent first
+// Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
 enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid);
 
+// Sends Request PICC command first, then gets the UID of the PICC in the vicinity and stores it in uid
+// Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
 enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid);
 
 #endif

@@ -2,6 +2,17 @@
 #ifndef SYSTEMTOOLS_H
 #define SYSTEMTOOLS_H
 
+/**
+ * System Tools Module
+ * Contains various useful functions.
+ * Includes functions for:
+ * - Getting current time
+ * - Sleeping for a specified time
+ * - Opening a file with a check
+ * - Byte rotating
+ * - Configuring pins on the Beaglebone
+ */
+
 #include <stdio.h>
 
 #define MS_PER_S    1000

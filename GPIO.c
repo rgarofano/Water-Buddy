@@ -24,7 +24,7 @@
 //     sleepForMs(SLEEP_TIME_AFTER_EXPORT_MS);
 // }
 
-void configPinForGPIO(const char* pin, const int gpioNum, const char* gpioDirection)
+void GPIO_configPin(const char* pin, const int gpioNum, const char* gpioDirection)
 {
     configPin(pin, "gpio");
 
@@ -39,7 +39,7 @@ void configPinForGPIO(const char* pin, const int gpioNum, const char* gpioDirect
     fclose(gpioDirectionFile);
 }
 
-int gpioRead(int gpioNum)
+int GPIO_read(int gpioNum)
 {
     const int GPIO_FILE_NAME_MAX_SIZE = 64;
     char gpioValueFileName[GPIO_FILE_NAME_MAX_SIZE];
@@ -58,7 +58,7 @@ int gpioRead(int gpioNum)
     return value;
 }
 
-void gpioWrite(int gpioNum, int value)
+void GPIO_write(int gpioNum, int value)
 {
     const int GPIO_FILE_NAME_MAX_SIZE = 64;
     char gpioValueFileName[GPIO_FILE_NAME_MAX_SIZE];
@@ -74,7 +74,7 @@ void gpioWrite(int gpioNum, int value)
 
 
 // LED
-void setLEDAttribute(const int LEDNum, const char* attribute, const char* value)
+void LED_setAttribute(const int LEDNum, const char* attribute, const char* value)
 {
     if(attribute == NULL || value == NULL) {
         printf("ERROR: NULL arguments in setLEDAttribute() for LED%d", LEDNum);

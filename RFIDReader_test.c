@@ -66,7 +66,7 @@ static void testGetUID(void)
 
     uint64_t uid = 0;
 
-    int status = RFIDReader_piccRequest(PICC_REQA);
+    int status = RFIDReader_piccCommand(PICC_REQA);
     if(status < 0) {
         printf("Error: PICC Request Failed\n");
     }
@@ -113,7 +113,7 @@ static void runTestSuite(void)
     for(int i = 0; i < NUM_TESTS; i++) {
         sleepForMs(100);
         (*testFunctions[i])();
-        gpioWrite(RST_GPIO_NUM, 0);
+        GPIO_write(RST_GPIO_NUM, 0);
     }
 }
 

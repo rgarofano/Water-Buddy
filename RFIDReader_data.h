@@ -3,6 +3,7 @@
 #define RFIDREADER_DATA_H
 
 /**
+ * RFID Reader Data
  * This header file provides information about MFRC522 registers and commands
  * The information in this file is informed by the data sheet and the Arduino Library
  * 
@@ -15,7 +16,7 @@
  * - Status Code enum table (in MFRC522.h)
  * - Transmission/Receiving Mode Settings (Set in MFRC522.c)
  *  
- * For reference:
+ * Definition of terms:
  * - PCD: Proximity Coupling Device (RFID Reader Chip)
  * - PICC: Proximity Inductive Coupling Card (RFID Tag)
  */

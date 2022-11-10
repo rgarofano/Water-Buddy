@@ -32,10 +32,10 @@ void RFIDReader_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstP
     rstGpioNum      = init_rstGpioNum;
 
 
-    configPinForGPIO(rstPin, rstGpioNum, GPIO_OUT);
-    gpioWrite(rstGpioNum, 0);
+    GPIO_configPin(rstPin, rstGpioNum, GPIO_OUT);
+    GPIO_write(rstGpioNum, 0);
     sleepForUs(2);
-    gpioWrite(rstGpioNum, 1);
+    GPIO_write(rstGpioNum, 1);
 
     spiFileDesc = SPI_initPort(
         spiBusNum,
@@ -197,7 +197,7 @@ enum MFRC522_StatusCode RFIDReader_transceive(uint8_t *sendBuffer, uint8_t sendS
     return status;
 }
 
-enum MFRC522_StatusCode RFIDReader_piccRequest(enum MFRC522_PICC_Command piccRequest)
+enum MFRC522_StatusCode RFIDReader_piccCommand(enum MFRC522_PICC_Command piccRequest)
 {
     #define BITS_TO_SEND 7 // Taken from the Arduino Library
     RFIDReader_writeReg(BitFramingReg, BITS_TO_SEND << BITFRAMINGREG_TXLASTBITS_BIT);
@@ -240,7 +240,7 @@ enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid)
 
 enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid)
 {
-    enum MFRC522_StatusCode status = RFIDReader_piccRequest(PICC_REQA);
+    enum MFRC522_StatusCode status = RFIDReader_piccCommand(PICC_REQA);
     if(status != STATUS_OK) {
         return status;
     }

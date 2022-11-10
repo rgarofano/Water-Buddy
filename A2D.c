@@ -6,8 +6,7 @@
 
 #include "A2D.h"
 
-// Analog IO
-int analogRead(int analogChannel)
+int A2D_read(int analogChannel)
 {
     const int ANALOG_FILE_NAME_MAX_SIZE = 64;
     char analogValueFileName[ANALOG_FILE_NAME_MAX_SIZE];
@@ -27,8 +26,8 @@ int analogRead(int analogChannel)
     return a2DReading;
 }
 
-float analogReadVoltage(int analogChannel)
+float A2D_readVoltage(int analogChannel)
 {
-    float a2dValue = (float)analogRead(analogChannel);
+    float a2dValue = (float)A2D_read(analogChannel);
     return ((a2dValue / MAX_A2D_VALUE) * MAX_AIN_VOLTAGE);
 }

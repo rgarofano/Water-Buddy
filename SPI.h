@@ -2,6 +2,12 @@
 #ifndef SPI_H
 #define SPI_H
 
+/**
+ * SPI Module
+ * Provides an API for using either of the Beaglebone's two SPI ports.
+ * Allows for easy port initialization and transfers.
+ */
+
 #include <stdint.h>
 
 #define NUM_SPI_BUSES 2
@@ -34,8 +40,10 @@ static const spi_port_t SPI_PORTS[] = {
     }
 };
 
-// Configures pins associated with the specified port number for spi
+// Configures pins associated with the specified port number for SPI
 // Opens the file associated with that port and the specified chipSelect number
+// SPI port number must be in the range 0 to 1
+// For SPI port 0, chip select must be 0. For SPI port 1, chip select can be 0 or 1
 // Returns the file descriptor
 int SPI_initPort(int port, int chipSelect, int spiMode, int bitsPerWord, int speedHz);
 
