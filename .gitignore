@@ -1,3 +1,6 @@
+server/.env
+
+# Executables
 main
 spidev_test
-server/.env
+rfid_test
