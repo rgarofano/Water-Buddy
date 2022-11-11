@@ -58,7 +58,7 @@ static void testFIFO(void)
     check(passCond);
 }
 
-static void testGetUID(void)
+static void testRequestUID(void)
 {
     printf("\ntestGetUID\n");
 
@@ -76,7 +76,7 @@ static void testGetUID(void)
         printf("Error: Get UID Failed\n");
     }
 
-    printf("%llx\n", uid);
+    printf("UID: %llx\n", uid);
 
     check(status == STATUS_OK);
 }
@@ -94,7 +94,7 @@ static void testGetImmediateUID(void)
         printf("Error: status %d\n", status);
     }
 
-    printf("%llx\n", uid);
+    printf("UID: %llx\n", uid);
 
     check(status == STATUS_OK);
 }
@@ -107,7 +107,7 @@ static void runTestSuite(void)
     void (*testFunctions[NUM_TESTS])(void);
 
     testFunctions[0] = testFIFO;
-    testFunctions[1] = testGetUID;
+    testFunctions[1] = testRequestUID;
     testFunctions[2] = testGetImmediateUID;
 
     for(int i = 0; i < NUM_TESTS; i++) {

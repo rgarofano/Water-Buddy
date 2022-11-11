@@ -223,6 +223,8 @@ enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid)
     enum MFRC522_StatusCode status = RFIDReader_transceive(sendBuf, SEND_LENGTH, recvBuf, &recvSize);
 
     if(recvSize < RECV_LENGTH) {
+        free(sendBuf);
+        free(recvBuf);
         return STATUS_ERROR;
     }
 
