@@ -4,3 +4,4 @@ server/.env
 main
 spidev_test
 rfid_test
+scale_test

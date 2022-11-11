@@ -22,6 +22,10 @@ rfid_test: cleanrfidtest
 	$(CC) $(CFLAGS) RFIDReader_test.c SystemTools.c GPIO.c SPI.c RFIDReader.c -o rfid_test
 	cp rfid_test $(HOME)/cmpt433/public/myApps/
 
+scale_test: cleanscaletest
+	$(CC) $(CFLAGS) scale_test.c GPIO.c A2D.c SystemTools.c -o scale_test
+	cp scale_test $(HOME)/cmpt433/public/myApps/
+
 # Clean Targets
 clean:
 	rm -f $(OUTPUT)
@@ -31,6 +35,9 @@ cleanspitest:
 
 cleanrfidtest:
 	rm -f rfid_test
+
+cleanscaletest:
+	rm -f scale_test
 
 cleantests:
 	rm -f spidev_test rfid_test
