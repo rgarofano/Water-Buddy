@@ -104,8 +104,8 @@ int SPI_transfer(int spiFileDesc, uint8_t *send, uint8_t *recv, int numBytes)
         .rx_buf = (unsigned long)recv,
         .len = numBytes,
         .delay_usecs = 0,
-        .speed_hz = 500000,
-        .bits_per_word = 8,
+        .speed_hz = SPEED_HZ_DEFAULT,
+        .bits_per_word = BITS_PER_WORD_DEFAULT
     };
 
 	int status = ioctl(spiFileDesc, SPI_IOC_MESSAGE(1), &transfer);

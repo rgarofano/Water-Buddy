@@ -12,7 +12,7 @@
 
 #define NUM_SPI_BUSES 2
 #define SPI_MODE_DEFAULT 0
-#define BITS_PER_WORD_DEFAULT 8
+#define BITS_PER_WORD_DEFAULT BITS_PER_BYTE
 #define SPEED_HZ_DEFAULT 500000
 
 typedef struct {
