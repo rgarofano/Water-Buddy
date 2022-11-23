@@ -34,7 +34,7 @@ app.post('/sms/:phone', (req, res) => {
             to: `+1${phone}`
         })
         .then(message => console.log(message.sid))
-        .catch(error => console.log);
+        .catch(console.log);
 
     res.send(`SMS sent to ${phone}`);
 });
