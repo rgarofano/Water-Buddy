@@ -5,7 +5,7 @@ CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -pthread -Werror
 
 HW_COMMON_FILES = ../hwCommon/SystemTools.c ../hwCommon/SPI.c ../hwCommon/I2C.c ../hwCommon/GPIO.c ../hwCommon/A2D.c
 
-all: spidev_test RFIDReader_test
+all: clean spidev_test RFIDReader_test
 
 # Test Targets
 spidev_test: clean_spidev_test
