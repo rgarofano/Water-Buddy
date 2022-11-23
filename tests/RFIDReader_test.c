@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "SystemTools.h"
-#include "GPIO.h"
+#include "../hwCommon/SystemTools.h"
+#include "../hwCommon/GPIO.h"
 
-#include "RFIDReader.h"
+#include "../RFIDReader.h"
 
 #define SPI_PORT_NUM 1
 #define SPI_CHIP_SEL 0

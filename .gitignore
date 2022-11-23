@@ -3,4 +3,4 @@ server/.env
 # Executables
 main
 spidev_test
-rfid_test
+RFIDReader_test
