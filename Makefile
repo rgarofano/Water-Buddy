@@ -3,9 +3,10 @@ CC = arm-linux-gnueabihf-gcc
 CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -pthread -Werror
 # -Werror: treat warnings as errors
 
-HW_COMMON_FILES = hwCommon/SystemTools.c hwCommon/SPI.c hwCommon/I2C.c hwCommon/GPIO.c hwCommon/A2D.c
-SOURCES = main.c RFIDReader.c $(HW_COMMON_FILES)
-TARGET = main
+HW_COMMON = $(wildcard hwCommon/*.c)
+DEVICES = $(wildcard devices/*.c)
+SOURCES = main.c $(HW_COMMON) $(DEVICES)
+TARGET = WaterBuddy
 
 all: clean $(TARGET)
 

@@ -6,7 +6,7 @@
 #include "../hwCommon/SystemTools.h"
 #include "../hwCommon/GPIO.h"
 
-#include "../RFIDReader.h"
+#include "../devices/RFIDReader.h"
 
 #define SPI_PORT_NUM 1
 #define SPI_CHIP_SEL 0

@@ -1,6 +1,6 @@
 server/.env
 
 # Executables
-main
+WaterBuddy
 spidev_test
 RFIDReader_test

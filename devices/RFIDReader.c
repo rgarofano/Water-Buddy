@@ -7,9 +7,9 @@
 #include <linux/spi/spidev.h>
 #include <errno.h>
 
-#include "hwCommon/SystemTools.h"
-#include "hwCommon/GPIO.h"
-#include "hwCommon/SPI.h"
+#include "../hwCommon/SystemTools.h"
+#include "../hwCommon/GPIO.h"
+#include "../hwCommon/SPI.h"
 
 #include "RFIDReader.h"
 
