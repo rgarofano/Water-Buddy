@@ -1,8 +1,12 @@
 #include "i2c.h"
-
+#include "lcd.h"
 int main() {
     configureI2C();
-    printf("Pins have been configured for I2C\n");
+    printf("Did the above command run?\n");
     int mainInit = initLCD();
-    lcd_display_string(mainInit, "hello", 1);
+    if (mainInit) {
+        printf("LCD has been configured\n");
+    }
+    //i2c_send_byte(0x08);
+
 }
