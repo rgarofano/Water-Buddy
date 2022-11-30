@@ -8,12 +8,18 @@ DEVICES = $(wildcard devices/*.c)
 SOURCES = main.c $(HW_COMMON) $(DEVICES)
 TARGET = WaterBuddy
 
-all: clean $(TARGET)
+PUBDIR = $(HOME)/cmpt433/public/myApps
+
+all: $(TARGET)
 
 # Main Target
 $(TARGET): clean
 	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET)
-	cp $(TARGET) $(HOME)/cmpt433/public/myApps/
+	cp $(TARGET) $(PUBDIR)/
+	mkdir -p $(PUBDIR)/server/
+	cp -R server/* $(PUBDIR)/server/
+	cp formData.json $(PUBDIR)/
+	
 
 # Clean Target
 clean:
