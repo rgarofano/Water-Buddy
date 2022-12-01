@@ -1,7 +1,11 @@
+.vscode
+
 server/.env
 
-# Executables
-main
+# Main
+WaterBuddy
+
+# Test executables
 spidev_test
-rfid_test
 scale_test
+RFIDReader_test
