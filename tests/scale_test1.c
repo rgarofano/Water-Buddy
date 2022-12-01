@@ -50,7 +50,7 @@ void setup() {
     // Serial.println("Starting...");
     printf("Starting...\n");
 
-    HX711_begin(HX711_DOUT_PIN, HX711_SCK_PIN, HX711_DOUT_GPIO_NUM, HX711_SCK_GPIO_NUM);
+    HX711_init(HX711_DOUT_PIN, HX711_SCK_PIN, HX711_DOUT_GPIO_NUM, HX711_SCK_GPIO_NUM);
     //HX711_setReverseOutput(); //uncomment to turn a negative output value to positive
     float calibrationValue; // calibration value (see example file "Calibration.ino")
     calibrationValue = 696.0; // uncomment this if you want to set the calibration value in the sketch

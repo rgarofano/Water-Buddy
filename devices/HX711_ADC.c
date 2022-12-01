@@ -22,7 +22,7 @@
 
 static uint8_t sckGpioNum; 							//HX711 pd_sck pin
 static uint8_t doutGpioNum; 							//HX711 dout pin
-static uint8_t GAIN;								//HX711 GAIN
+static uint8_t gainSetting;								//HX711 gainSetting
 static float calFactor = 1.0;						//calibration factor as given in function setCalFactor(float cal)
 static float calFactorRecip = 1.0;					//reciprocal calibration factor (1/calFactor), the HX711 raw data is multiplied by this value
 static volatile long dataSampleSet[DATA_SET + 1];	// dataset, make voltile if interrupt is used 
@@ -36,7 +36,7 @@ static const uint8_t divBitCompiled = DIVB;
 static bool doTare = 0;
 static uint8_t convRslt = 0;
 static bool tareStatus = 0;
-static unsigned int tareTimeOut = (SAMPLES + IGN_HIGH_SAMPLE + IGN_HIGH_SAMPLE) * 150; // tare timeout time in ms, no of samples * 150ms (10SPS + 50% margin)
+static const unsigned int TARE_TIMEOUT_TIME_MS = (SAMPLES + IGN_HIGH_SAMPLE + IGN_HIGH_SAMPLE) * 150; // tare timeout time in ms, no of samples * 150ms (10SPS + 50% margin)
 static bool tareTimeoutFlag = 0;
 static bool tareTimeoutDisable = 0;
 static int samplesInUse = SAMPLES;
@@ -49,19 +49,23 @@ static bool dataWaiting = 0;
 
 void HX711_setGain(uint8_t gain)  //value should be 32, 64 or 128*
 {
-	if(gain < 64) {
-		GAIN = 2; //32, channel B
-	}
-	else if(gain < 128) {
-		GAIN = 3; //64, channel A
-	}
-	else {
-		GAIN = 1; //128, channel A
+	switch(gain) {
+		case 32:
+			gainSetting = 2;
+			break;
+		case 64:
+			gainSetting = 3;
+			break;
+		case 128:
+			gainSetting = 1;
+			break;
+		default:
+			gainSetting = 1;
 	}
 }
 
 //set pinMode, HX711 gain and power up the HX711
-void HX711_begin(char *init_doutPin, char *init_sckPin, uint8_t init_doutGpioNum, uint8_t init_sckGpioNum)
+void HX711_init(char *init_doutPin, char *init_sckPin, uint8_t init_doutGpioNum, uint8_t init_sckGpioNum)
 {
 	doutGpioNum = init_doutGpioNum;
 	sckGpioNum = init_sckGpioNum;
@@ -99,13 +103,13 @@ void HX711_tare()
 	doTare = 1;
 	tareTimes = 0;
 	tareTimeoutFlag = 0;
-	unsigned long timeout = getTimeInMs() + tareTimeOut;
+	unsigned long timeoutMs = getTimeInMs() + TARE_TIMEOUT_TIME_MS;
 	while(rdy != 2) 
 	{
 		rdy = HX711_update();
 		if (!tareTimeoutDisable) 
 		{
-			if (getTimeInMs() > timeout) 
+			if (getTimeInMs() > timeoutMs) 
 			{ 
 				tareTimeoutFlag = 1;
 				break; // Prevent endless loop if no HX711 is connected
@@ -252,11 +256,11 @@ void HX711_conversion24bit()  //read 24 bit data, store in dataset and start the
 	convRslt = 0;
 	// if(SCK_DISABLE_INTERRUPTS) noInterrupts();
 
-	for (uint8_t i = 0; i < (24 + GAIN); i++) 
+	for (uint8_t i = 0; i < (24 + gainSetting); i++) 
 	{ 	//read 24 bit data + set gain and start next conversion
-		GPIO_write(sckGpioNum, 1);
+		GPIO_write(sckGpioNum, HIGH);
 		if(SCK_DELAY) sleepForUs(1); // could be required for faster mcu's, set value in config.h
-		GPIO_write(sckGpioNum, 0);
+		GPIO_write(sckGpioNum, LOW);
 		if (i < (24)) 
 		{
 			dout = GPIO_read(doutGpioNum);

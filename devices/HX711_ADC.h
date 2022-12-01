@@ -49,18 +49,18 @@ Note: HX711_ADC configuration values has been moved to file config.h
 #define SIGNAL_TIMEOUT	100
 
 void 	HX711_setGain(uint8_t gain); 			//value must be 32, 64 or 128*
-void	HX711_begin(char *init_doutPin, char *init_sckPin, uint8_t init_doutGpioNum, uint8_t init_sckGpioNum);
+void	HX711_init(char *init_doutPin, char *init_sckPin, uint8_t init_doutGpioNum, uint8_t init_sckGpioNum);
 void	HX711_start(unsigned long t, bool dotare);		//start HX711, do tare if selected
 void 	HX711_tare(); 								//zero the scale, wait for tare to finnish (blocking)
 void 	HX711_tareNoDelay(); 						//zero the scale, initiate the tare operation to run in the background (non-blocking)
 bool 	HX711_getTareStatus();						//returns 'true' if tareNoDelay() operation is complete
 void 	HX711_setCalFactor(float cal); 				//set new calibration factor, raw data is divided by this value to convert to readable data
-float 	HX711_getCalFactor(); 						//returns the current calibration factor
-float 	HX711_getData(); 							//returns data from the moving average dataset 
+float   HX711_getCalFactor(); 						//returns the current calibration factor
+float   HX711_getData(); 							//returns data from the moving average dataset 
 
 int 	HX711_getReadIndex(); 						//for testing and debugging
-float 	HX711_getConversionTime(); 					//for testing and debugging
-float 	HX711_getSPS();								//for testing and debugging
+float   HX711_getConversionTime(); 					//for testing and debugging
+float   HX711_getSPS();								//for testing and debugging
 bool 	HX711_getTareTimeoutFlag();					//for testing and debugging
 void 	HX711_disableTareTimeout();					//for testing and debugging
 long 	HX711_getSettlingTime();						//for testing and debugging
