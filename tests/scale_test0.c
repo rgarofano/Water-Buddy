@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "SystemTools.h"
-#include "A2D.h"
-#include "GPIO.h"
+#include "../hwCommon/SystemTools.h"
+#include "../hwCommon/A2D.h"
+#include "../hwCommon/GPIO.h"
 
 #define ADD0_PIN "p9_13"
 #define ADSK_PIN "p9_11"
@@ -16,7 +16,8 @@ unsigned long ReadCount(void) {
     unsigned char i;
 
     // ADDO = 1; 
-    // GPIO_write(ADD0_GPIO_NUM, 1);
+    // GPIO_write(ADD0_GPIO_NUM, 1); // This is wrong
+
     // ADSK = 0;
     GPIO_write(ADSK_GPIO_NUM, 0);
 
