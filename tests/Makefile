@@ -6,7 +6,7 @@ CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -pthread #-Werror
 HW_COMMON = $(wildcard ../hwCommon/*.c)
 DEVICES = $(wildcard ../devices/*.c)
 
-all: clean spidev_test RFIDReader_test scale_test1
+all: clean
 
 # Test Targets
 spidev_test: clean
@@ -17,10 +17,11 @@ RFIDReader_test: clean
 	$(CC) $(CFLAGS) RFIDReader_test.c ../devices/RFIDReader.c $(HW_COMMON) -o RFIDReader_test
 	cp RFIDReader_test $(HOME)/cmpt433/public/myApps/
 
-scale_test1: clean
-	$(CC) $(CFLAGS) scale_test1.c ../devices/HX711_ADC.c $(HW_COMMON) -o scale_test1
-	cp scale_test1 $(HOME)/cmpt433/public/myApps/
+scale_test: clean
+	$(CC) $(CFLAGS) scale_test.c $(HW_COMMON) -o scale_test
+	cp scale_test $(HOME)/cmpt433/public/myApps/
+
 
 # Clean Target
 clean:
-	rm -f spidev_test RFIDReader_test scale_test1
+	rm -f spidev_test RFIDReader_test scale_test

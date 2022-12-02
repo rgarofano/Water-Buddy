@@ -124,3 +124,32 @@ float getWeight(void)
 
     return weightKg;
 }
+
+
+
+
+float weightData;
+
+loop()
+{
+    weightData = LoadCell.getData();
+
+    if(req is high) {
+        sendWeight(weightData);
+    }
+}
+
+
+
+void sendWeight(float weightData) {
+
+    unsigned int *weightDataAsInt = &weightData;
+
+    for(int bit = 31; bit >= 0; bit--) {
+        while(clk is low);
+
+        int data_pin = ((*weightDataAsInt) >> bit) & 1;
+
+        while(clk is high);
+    }
+

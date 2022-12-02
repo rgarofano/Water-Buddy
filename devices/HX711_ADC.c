@@ -36,9 +36,9 @@ static const uint8_t divBitCompiled = DIVB;
 static bool doTare = 0;
 static uint8_t convRslt = 0;
 static bool tareStatus = 0;
-static const unsigned int TARE_TIMEOUT_TIME_MS = (SAMPLES + IGN_HIGH_SAMPLE + IGN_HIGH_SAMPLE) * 150; // tare timeout time in ms, no of samples * 150ms (10SPS + 50% margin)
+static const unsigned int TARE_TIMEOUT_TIME_MS = (SAMPLES + IGN_HIGH_SAMPLE + IGN_HIGH_SAMPLE) * 150 + 200; // tare timeout time in ms, no of samples * 150ms (10SPS + 50% margin)
 static bool tareTimeoutFlag = 0;
-static bool tareTimeoutDisable = 0;
+static bool tareTimeoutDisable = 1;
 static int samplesInUse = SAMPLES;
 static long lastSmoothedData = 0;
 static bool dataOutOfRange = 0;
@@ -74,7 +74,7 @@ void HX711_init(char *init_doutPin, char *init_sckPin, uint8_t init_doutGpioNum,
 	GPIO_configPin(init_sckPin, init_sckGpioNum, GPIO_OUT);
 	GPIO_configPin(init_doutPin, init_doutGpioNum, GPIO_IN);
 	HX711_setGain(128);
-	HX711_powerUp();
+	HX711_powerUp();	
 }
 
 /*  start(t, dotare) with selectable tare:
@@ -107,11 +107,13 @@ void HX711_tare()
 	while(rdy != 2) 
 	{
 		rdy = HX711_update();
+		printf("Tare Loop\n");
 		if (!tareTimeoutDisable) 
 		{
 			if (getTimeInMs() > timeoutMs) 
 			{ 
 				tareTimeoutFlag = 1;
+				printf("Tare Timeout\n");
 				break; // Prevent endless loop if no HX711 is connected
 			}
 		}
@@ -157,17 +159,19 @@ uint8_t HX711_update()
 	uint8_t dout = GPIO_read(doutGpioNum); //check if conversion is ready
 	if (!dout) 
 	{
-		HX711_conversion24bit();
+		int data = HX711_conversion24bit();
 		lastDoutLowTime = getTimeInMs();
 		signalTimeoutFlag = 0;
+		printf("data: %x\n", data);
 	}
 	else 
 	{
-		//if (getTimeInMs() > (lastDoutLowTime + SIGNAL_TIMEOUT))
-		if (getTimeInMs() - lastDoutLowTime > SIGNAL_TIMEOUT)
-		{
-			signalTimeoutFlag = 1;
-		}
+		//if (getTimeInMs() > (lastDoutLowTime + SIGNAL_TIMEOUT_MS))
+		// if (getTimeInMs() - lastDoutLowTime > SIGNAL_TIMEOUT_MS)
+		// {
+		// 	signalTimeoutFlag = 1;
+		// 	printf("Signal Timeout\n");
+		// }
 		convRslt = 0;
 	}
 	return convRslt;
@@ -189,8 +193,8 @@ bool HX711_dataWaitingAsync()
 	}
 	else
 	{
-		//if (getTimeInMs() > (lastDoutLowTime + SIGNAL_TIMEOUT))
-		if (getTimeInMs() - lastDoutLowTime > SIGNAL_TIMEOUT)
+		//if (getTimeInMs() > (lastDoutLowTime + SIGNAL_TIMEOUT_MS))
+		if (getTimeInMs() - lastDoutLowTime > SIGNAL_TIMEOUT_MS)
 		{
 			signalTimeoutFlag = 1;
 		}
@@ -247,7 +251,7 @@ long HX711_smoothedData()
 
 }
 
-void HX711_conversion24bit()  //read 24 bit data, store in dataset and start the next conversion
+int HX711_conversion24bit()  //read 24 bit data, store in dataset and start the next conversion
 {
 	conversionTime = getTimeInUs() - conversionStartTime;
 	conversionStartTime = getTimeInUs();
@@ -258,15 +262,17 @@ void HX711_conversion24bit()  //read 24 bit data, store in dataset and start the
 
 	for (uint8_t i = 0; i < (24 + gainSetting); i++) 
 	{ 	//read 24 bit data + set gain and start next conversion
+		int clockHalfPeriodUs = 1;
+
 		GPIO_write(sckGpioNum, HIGH);
-		if(SCK_DELAY) sleepForUs(1); // could be required for faster mcu's, set value in config.h
+		sleepForUs(clockHalfPeriodUs);
 		GPIO_write(sckGpioNum, LOW);
+		sleepForUs(clockHalfPeriodUs);
+
 		if (i < (24)) 
 		{
 			dout = GPIO_read(doutGpioNum);
 			data = (data << 1) | dout;
-		} else {
-			if(SCK_DELAY) sleepForUs(1); // could be required for faster mcu's, set value in config.h
 		}
 	}
 	// if(SCK_DISABLE_INTERRUPTS) interrupts();
@@ -314,6 +320,8 @@ void HX711_conversion24bit()  //read 24 bit data, store in dataset and start the
 			}
 		}
 	}
+
+	return data;
 }
 
 //power down the HX711
@@ -464,7 +472,7 @@ float HX711_getNewCalibration(float known_mass)
     return new_calFactor;
 }
 
-//returns 'true' if it takes longer time then 'SIGNAL_TIMEOUT' for the dout pin to go low after a new conversion is started
+//returns 'true' if it takes longer time then 'SIGNAL_TIMEOUT_MS' for the dout pin to go low after a new conversion is started
 bool HX711_getSignalTimeoutFlag()
 {
 	return signalTimeoutFlag;

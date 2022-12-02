@@ -46,7 +46,7 @@ Note: HX711_ADC configuration values has been moved to file config.h
 #define 	DIVB 7
 #endif
 
-#define SIGNAL_TIMEOUT	100
+#define SIGNAL_TIMEOUT_MS	1000
 
 void 	HX711_setGain(uint8_t gain); 			//value must be 32, 64 or 128*
 void	HX711_init(char *init_doutPin, char *init_sckPin, uint8_t init_doutGpioNum, uint8_t init_sckGpioNum);
@@ -79,7 +79,7 @@ bool 	HX711_getDataSetStatus();					//returns 'true' when the whole dataset has 
 float 	HX711_getNewCalibration(float known_mass);	//returns and sets a new calibration value (calFactor) based on a known mass input
 bool 	HX711_getSignalTimeoutFlag();				//returns 'true' if it takes longer time then 'SIGNAL_TIMEOUT' for the dout pin to go low after a new conversion is started
 void 	HX711_setReverseOutput();					//reverse the output value
-void 	HX711_conversion24bit(); 					//if conversion is ready: returns 24 bit data and starts the next conversion
+int		HX711_conversion24bit(); 					//if conversion is ready: returns 24 bit data and starts the next conversion
 long 	HX711_smoothedData();						//returns the smoothed data value calculated from the dataset
 
 
