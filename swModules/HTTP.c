@@ -42,7 +42,7 @@ static void sendHttpRequest(int socketFileDescriptor, char* request)
     }
 
     // required for formatiing
-    printf("\n");
+    printf("\n\n");
 }
 
 static void buildDestinationAddress(struct sockaddr_in* sockaddr_in)
@@ -64,6 +64,9 @@ static void buildDestinationAddress(struct sockaddr_in* sockaddr_in)
 
 static void sendRequestToServer(char* request)
 {
+    /* The code in this function was heavily influenced by:
+       https://stackoverflow.com/questions/11208299/how-to-make-an-http-get-request-in-c-without-libcurl */
+
     // Create socket to send data over the network
     struct protoent * protoent = getprotobyname("tcp");
     if (protoent == NULL) {
@@ -102,7 +105,11 @@ void HTTP_sendGetRequest(char* route)
 
 void HTTP_sendPostRequest(char* route)
 {
-    char buffer[BUFF_SIZE];
-    snprintf(buffer, BUFF_SIZE, POST_REQUEST_STR, route);
-    sendRequestToServer(buffer);
+    char request[BUFF_SIZE];
+    int requestLength = snprintf(request, BUFF_SIZE, POST_REQUEST_STR, route, SERVER_IP);
+    if (requestLength >= BUFF_SIZE) {
+        fprintf(stderr, "request length large: %d\n", requestLength);
+        exit(EXIT_FAILURE);
+    }
+    sendRequestToServer(request);
 }
