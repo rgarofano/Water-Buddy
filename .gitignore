@@ -1,2 +1,8 @@
+.vscode
 
 server/.env
+
+# Executables
+WaterBuddy
+spidev_test
+RFIDReader_test
