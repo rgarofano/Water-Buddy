@@ -4,13 +4,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "hwCommon/SystemTools.h"
 #include "swModules/User.h"
 #include "swModules/JSON.h"
+#include "swModules/HTTP.h"
 
-static void startServer(void)
-{
-    system("node server/app.js");
-}
+// static void startServer(void)
+// {
+//     system("node server/app.js");
+// }
 
 static void testJson(void)
 {
@@ -27,7 +29,7 @@ static void testJson(void)
 
 int main()
 {
-    startServer();
+    HTTP_sendGetRequest("/data");
     testJson();
     return 0;
 }
