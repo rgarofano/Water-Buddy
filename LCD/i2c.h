@@ -18,3 +18,5 @@ void i2c_start();
 void i2c_stop();
 
 void i2c_send_byte(unsigned char data);
+
+void lcdputchar(char displaychar);

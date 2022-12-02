@@ -32,7 +32,7 @@ void i2c_stop() { close(i2cFile); }
 void i2c_send_byte(unsigned char data) {
    unsigned char byte[1];
    byte[0] = data;
-   write(i2cFile, byte, sizeof(byte)); 
+   write(i2cFile, byte, sizeof(byte));
    /* -------------------------------------------------------------------- *
     * Below wait creates 1msec delay, needed by display to catch commands  *
     * -------------------------------------------------------------------- */

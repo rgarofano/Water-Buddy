@@ -44,5 +44,6 @@ long long getTimeInMs(void) {
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
     long long nanoSeconds = spec.tv_nsec;
-    return nanoSeconds;
+    long long miliSeconds = nanoSeconds * 1000;
+    return miliSeconds;
 }

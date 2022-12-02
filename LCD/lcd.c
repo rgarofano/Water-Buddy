@@ -41,8 +41,8 @@
 #define Rw 0b00000010
 #define Rs 0b00000001 
 
-#define LCD_CMD  0X00
-#define LCD_DATA 0X01
+#define LCD_CMD  0x00
+#define LCD_DATA 0x01
 
 void LCD_strobe(unsigned char cmd) {
 	i2c_send_byte((cmd | En | LCD_BACKLIGHT));
@@ -57,6 +57,17 @@ void LCD_sendCMD(unsigned char cmd) {
     LCD_strobe(cmd);
 }
 
+void LCD_toggle() {
+    i2c_send_byte(0x00);
+    sleepForMs(100);
+    i2c_send_byte(0x08);
+    sleepForMs(100);
+    i2c_send_byte(0x00);
+    sleepForMs(100);
+    i2c_send_byte(0x08);
+    sleepForMs(100);
+}
+
 void LCD_sendDATA(unsigned char data) {
     i2c_send_byte(Rs | (data & 0xF0) | LCD_BACKLIGHT);
     i2c_send_byte(Rs | ((data << 4) & 0xF0) | LCD_BACKLIGHT);
@@ -68,7 +79,5 @@ int initLCD() {
     LCD_sendCMD(LCD_DISPLAYCONTROL | LCD_DISPLAYON);
     LCD_sendCMD(LCD_CLEARDISPLAY);
     LCD_sendCMD(LCD_ENTRYMODESET | LCD_ENTRYLEFT);
-    LCD_sendCMD(0x80);
-    LCD_sendDATA((int) 'R');
     return 1;
 }
