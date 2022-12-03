@@ -59,20 +59,15 @@ void setup() {
   }
   while (!LoadCell.update());
   calibrate(); //start calibration procedure
-}
+} 
 
 void loop() {
-  static boolean newDataReady = 0;
-
-  // check for new data/start next conversion:
-  if (LoadCell.update()) newDataReady = true;
 
   // get smoothed value from the dataset:
-  if (newDataReady) {
+  if (LoadCell.update()) {
     weight = LoadCell.getData();
     Serial.print("Load_cell output val: ");
     Serial.println(weight);
-    newDataReady = 0;
     timeOfPreviousGetDataMs = millis();
   }
   
