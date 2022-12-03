@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "i2c-dev.h": "c",
+        "ioctl.h": "c",
+        "i2c.h": "c",
+        "general.h": "c",
+        "lcd.h": "c"
+    }
+}
