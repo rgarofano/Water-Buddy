@@ -1,3 +1,14 @@
+/* LCD Display Driver Code
+	Allows us to display characters,
+	to our LCD over I2C.
+	
+	Our group has added to and modified
+	a pre-existing C Library for interfacing
+	LCD displays.
+
+	Source: https://github.com/Ckath/lcd2004_i2c
+*/
+
 #include <fcntl.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -10,6 +21,7 @@
 #include <time.h>
 
 #include "../hwCommon/SystemTools.h"
+#include "../hwCommon/I2C.h"
 #include "LCDDisplay.h"
 
 #define LCD_ROW0 0x80
@@ -23,24 +35,16 @@ struct lcd {
 	uint8_t bl;
 };
 
-static void
-i2c_write(int fd, uint8_t b)
-{
-	write(fd, &b, 1);
-}
-
-static void
-lcd_toggle_enable(int fd, uint8_t val)
+static void LCDDisplay_toggle(int fd, uint8_t val)
 {
 	sleepForMs(10);
-	i2c_write(fd, val | LCD_ENABLE_BIT);
+	I2C_write(fd, val | LCD_ENABLE_BIT);
 	sleepForMs(10);
-	i2c_write(fd, val & ~LCD_ENABLE_BIT);
+	I2C_write(fd, val & ~LCD_ENABLE_BIT);
 	sleepForMs(10);
 }
 
-LCD *
-lcd_init(int bus, int addr)
+LCD *LCDDisplay_init(int bus, int addr)
 {
 	/* create lcd and associate with i2c device */
 	LCD *lcd = malloc(sizeof(LCD));
@@ -51,7 +55,7 @@ lcd_init(int bus, int addr)
 		free(lcd);
 		return NULL;
 	} if (ioctl(lcd->fd, I2C_SLAVE, addr) < 0) { 
-		lcd_delete(lcd);
+		LCDDisplay_delete(lcd);
 		return NULL;
 	}
 
@@ -69,40 +73,33 @@ lcd_init(int bus, int addr)
 	return lcd;
 }
 
-void
-lcd_delete(LCD *lcd)
-{
+void LCDDisplay_delete(LCD *lcd) {
 	close(lcd->fd);
 	free(lcd);
 }
 
-void
-lcd_send_byte(LCD *lcd, uint8_t val, uint8_t mode) {
+void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode) {
 	uint8_t buf = mode | (val & 0xF0) | lcd->bl;
-	i2c_write(lcd->fd, buf); /* write first nibble */
-	lcd_toggle_enable(lcd->fd, buf);
+	I2C_write(lcd->fd, buf); /* write first nibble */
+	LCDDisplay_toggle(lcd->fd, buf);
 	buf = mode | ((val << 4) & 0xF0) | lcd->bl;
-	i2c_write(lcd->fd, buf); /* write second nibble */
-	lcd_toggle_enable(lcd->fd, buf);
+	I2C_write(lcd->fd, buf); /* write second nibble */
+	LCDDisplay_toggle(lcd->fd, buf);
 }
 
-void
-lcd_backlight(LCD *lcd, uint8_t on)
-{
+void LCDDisplay_backlight(LCD *lcd, uint8_t on) {
 	lcd->bl = on ? LCD_BACKLIGHT : LCD_NOBACKLIGHT;
 	lcd_on(lcd);
 }
 
-void
-lcd_write(LCD *lcd, char *data)
+void LCDDisplay_write(LCD *lcd, char *data)
 {
 	for (uint8_t i = 0; i < strlen(data); ++i) {
 		lcd_send_chr(lcd, data[i]);
 	}
 }
 
-void
-lcd_move(LCD *lcd, int x, int y)
+void LCDDisplay_move(LCD *lcd, int x, int y)
 {
 	uint8_t pos_addr = x;
 	switch(y) {

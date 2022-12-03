@@ -43,17 +43,17 @@
 
 typedef struct lcd LCD;
 
-LCD *lcd_init(int bus, int addr);
-void lcd_delete(LCD *lcd);
-void lcd_send_byte(LCD *lcd, uint8_t val, uint8_t mode); /* <- not meant for direct calling */
-void lcd_backlight(LCD *lcd, uint8_t on);
-void lcd_move(LCD *lcd, int x, int y);
-void lcd_write(LCD *lcd, char *data);
+LCD *LCDDisplay_init(int bus, int addr);
+void LCDDisplay_delete(LCD *lcd);
+void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode); /* <- not meant for direct calling */
+void LCDDisplay_backlight(LCD *lcd, uint8_t on);
+void LCDDisplay_move(LCD *lcd, int x, int y);
+void LCDDisplay_write(LCD *lcd, char *data);
 
 /* convenient wrapper macros */
-#define lcd_mvwrite(lcd, x, y, data) do { lcd_move(lcd, x, y); lcd_write(lcd, data); } while (0)
-#define lcd_send_cmd(lcd, cmd) lcd_send_byte(lcd, cmd, LCD_CMD)
-#define lcd_send_chr(lcd, chr) lcd_send_byte(lcd, chr, LCD_CHR)
+#define lcd_mvwrite(lcd, x, y, data) do { LCDDisplay_move(lcd, x, y); LCDDisplay_write(lcd, data); } while (0)
+#define lcd_send_cmd(lcd, cmd) LCDDisplay_sendByte(lcd, cmd, LCD_CMD)
+#define lcd_send_chr(lcd, chr) LCDDisplay_sendByte(lcd, chr, LCD_CHR)
 #define lcd_off(lcd) lcd_send_cmd(lcd, LCD_DISPLAYCONTROL | LCD_DISPLAYOFF)
 #define lcd_on(lcd) lcd_send_cmd(lcd, LCD_DISPLAYCONTROL | LCD_DISPLAYON)
 #define lcd_clear(lcd) do { lcd_send_cmd(lcd, LCD_CLEARDISPLAY); lcd_send_cmd(lcd, LCD_RETURNHOME); } while (0)
