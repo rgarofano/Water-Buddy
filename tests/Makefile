@@ -17,6 +17,10 @@ RFIDReader_test: clean_RFIDReader_test
 	$(CC) $(CFLAGS) RFIDReader_test.c ../devices/RFIDReader.c $(HW_COMMON) -o RFIDReader_test
 	cp RFIDReader_test $(HOME)/cmpt433/public/myApps/
 
+LCD_test: clean_LCD_test
+	$(CC) $(CFLAGS) LCD_test.c ../devices/LCDDisplay.c -o LCD_test
+	cp LCD_test $(HOME)/cmpt433/public/myApps/
+
 # Clean Targets
 clean_spidev_test:
 	rm -f spidev_test
@@ -24,5 +28,8 @@ clean_spidev_test:
 clean_RFIDReader_test:
 	rm -f RFIDReader_test
 
+clean_LCD_test:
+	rm -f LCD_test
+
 clean:
-	rm -f spidev_test RFIDReader_test
+	rm -f spidev_test RFIDReader_test LCD_test
