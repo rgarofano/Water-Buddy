@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[])
 {
-	LCD *lcd = lcd_init(2, 0x27);
+	LCD *lcd = LCDDisplay_init(2, 0x27);
 	if (!lcd) {
 		fputs("failed to open lcd", stderr);
 		return 1;

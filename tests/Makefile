@@ -18,7 +18,7 @@ RFIDReader_test: clean_RFIDReader_test
 	cp RFIDReader_test $(HOME)/cmpt433/public/myApps/
 
 LCD_test: clean_LCD_test
-	$(CC) $(CFLAGS) LCD_test.c ../devices/LCDDisplay.c -o LCD_test
+	$(CC) $(CFLAGS) LCD_test.c ../devices/LCDDisplay.c $(HW_COMMON) -o LCD_test
 	cp LCD_test $(HOME)/cmpt433/public/myApps/
 
 # Clean Targets
