@@ -5,16 +5,66 @@
 #include "devices/Scale.h"
 #include "devices/RFIDReader.h"
 
-#include <stdlib.h>
+#include "swModules/User.h"
+#include "swModules/JSON.h"
+#include "swModules/HTTP.h"
 
-static void startServer(void)
+#include <stdlib.h>
+#include <pthread.h>
+
+#define INIT_ARRAY_SIZE 4
+
+/* Thread IDs */
+static pthread_t serverTid;
+
+/* User Data */
+static int numberUsers = 0;
+static int maxNumberUsers;
+static user_t* userData;
+
+static void* startServer(void* _arg)
 {
     system("node server/app.js");
 }
 
+static void addUser(uint64_t rfid)
+{
+    // get up to date form data from server
+    HTTP_sendGetRequest("/data");
+    
+    user_t newUser;
+    newUser.id = rfid;
+    // parse formData.json to add the remaining
+    // fileds to the struct
+    JSON_getUserDataFromFile(&newUser);
+
+    numberUsers++;
+    if (numberUsers == maxNumberUsers) {
+        doubleArraySize();
+    }
+
+    userData[numberUsers - 1] = newUser;
+}
+
+static void initializeUserArray() 
+{
+    userData = malloc(INIT_ARRAY_SIZE * sizeof(*userData));
+    if (userData == NULL) {
+        perror("Error allocating memory");
+    }
+
+    maxNumberUsers = INIT_ARRAY_SIZE;
+}
+
+static void doubleArraySize()
+{
+    maxNumberUsers *= 2;
+    userData = realloc(userData, maxNumberUsers * sizeof(*userData));
+}
+
 static void init(void)
 {
-    startServer();
+    pthread_create(&serverTid, NULL, startServer, NULL);
 
     Scale_init( SCALE_REQ_PIN,
                 SCALE_REQ_GPIO,
@@ -28,11 +78,11 @@ static void init(void)
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
     // TODO: LCD init
+
+    initializeUserArray();
 }
 
 void WaterBuddy_start(void)
 {
     init();
 }
-
-
