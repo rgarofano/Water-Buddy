@@ -1,16 +1,8 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-void startServer(void)
-{
-    system("node server/app.js");
-}
+#include "WaterBuddy.h"
 
 int main()
 {
-    startServer();
+    WaterBuddy_start();
     return 0;
 }

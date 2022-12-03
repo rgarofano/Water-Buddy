@@ -14,7 +14,7 @@ static int reqGPIO = 0;
 
 static bool initialized = false;
 
-void Scale_init(char* init_clkPin, char* init_dataPin, char* init_reqPin, int init_clkGPIO, int init_dataGPIO, int init_reqGPIO)
+void Scale_init(char* init_clkPin, int init_clkGPIO, char* init_dataPin, int init_dataGPIO, char* init_reqPin, int init_reqGPIO)
 {
     reqGPIO = init_reqGPIO;
     dataGPIO = init_dataGPIO;
