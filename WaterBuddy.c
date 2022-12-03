@@ -15,8 +15,18 @@ static void startServer(void)
 static void init(void)
 {
     startServer();
-    Scale_init(SCALE_CLK_PIN, SCALE_CLK_GPIO, SCALE_DATA_GPIO, SCALE_DATA_GPIO, SCALE_REQ_PIN, SCALE_REQ_GPIO);
+
+    Scale_init( SCALE_REQ_PIN,
+                SCALE_REQ_GPIO,
+                SCALE_ACK_PIN,
+                SCALE_ACK_GPIO,
+                SCALE_CLK_PIN,
+                SCALE_CLK_GPIO,
+                SCALE_DATA_PIN,
+                SCALE_DATA_GPIO);
+
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
+    
     // TODO: LCD init
 }
 

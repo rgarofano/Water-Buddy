@@ -7,16 +7,18 @@
 #include "../hwCommon/SPI.h"
 #include "../hwCommon/GPIO.h"
 
-#define CLK_PIN     "p9_11"
-#define DATA_PIN    "p9_13"
-#define REQ_PIN     "p9_15"
-#define CLK_GPIO    30
-#define DATA_GPIO   31
-#define REQ_GPIO    48
+#include "../WaterBuddy_pinDefines.h"
 
 int main()
 {
-    Scale_init(CLK_PIN, DATA_PIN, REQ_PIN, CLK_GPIO, DATA_GPIO, REQ_GPIO);
+    Scale_init( SCALE_REQ_PIN,
+                SCALE_REQ_GPIO,
+                SCALE_ACK_PIN,
+                SCALE_ACK_GPIO,
+                SCALE_CLK_PIN,
+                SCALE_CLK_GPIO,
+                SCALE_DATA_PIN,
+                SCALE_DATA_GPIO);
     
     while(1) {
         int weight = Scale_getWeightGrams();

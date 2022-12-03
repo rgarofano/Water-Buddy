@@ -8,21 +8,35 @@
 
 #define BITS_PER_INT 32
 
+static int reqGPIO = 0;
+static int ackGPIO = 0;
 static int clkGPIO = 0;    
 static int dataGPIO = 0;
-static int reqGPIO = 0;
 
 static bool initialized = false;
 
-void Scale_init(char* init_clkPin, int init_clkGPIO, char* init_dataPin, int init_dataGPIO, char* init_reqPin, int init_reqGPIO)
+void Scale_init(char*   init_reqPin,
+                int     init_reqGPIO,
+                char*   init_ackPin,
+                int     init_ackGPIO,
+                char*   init_clkPin,
+                int     init_clkGPIO,
+                char*   init_dataPin,
+                int     init_dataGPIO
+)
 {
     reqGPIO = init_reqGPIO;
-    dataGPIO = init_dataGPIO;
+    ackGPIO = init_ackGPIO;
     clkGPIO = init_clkGPIO;
+    dataGPIO = init_dataGPIO;
 
-    GPIO_configPin(init_reqPin, init_reqGPIO, GPIO_OUT);
-    GPIO_configPin(init_clkPin, init_clkGPIO, GPIO_OUT);
-    GPIO_configPin(init_dataPin, init_dataGPIO, GPIO_IN);
+    GPIO_configPin(init_reqPin, reqGPIO, GPIO_OUT);
+    GPIO_configPin(init_ackPin, ackGPIO, GPIO_IN);
+    GPIO_configPin(init_clkPin, clkGPIO, GPIO_OUT);
+    GPIO_configPin(init_dataPin, dataGPIO, GPIO_IN);
+
+    GPIO_write(reqGPIO, 0);
+    GPIO_write(clkGPIO, 0);
 
     initialized = true;
 }
@@ -33,10 +47,11 @@ int Scale_getWeightGrams(void)
         return 0;
     }
 
-    GPIO_write(clkGPIO, 0);
+    // Request
     GPIO_write(reqGPIO, 1);
 
-    sleepForUs(REQ_WAIT_TIME_US);
+    // Wait for acknowledge
+    while(GPIO_read(ackGPIO) == 0);
 
     GPIO_write(reqGPIO, 0);
 
