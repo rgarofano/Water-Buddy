@@ -2,7 +2,10 @@
 
 server/.env
 
-# Executables
+# Main
 WaterBuddy
-spidev_test
-RFIDReader_test
+
+# Test executables
+tests/scale_test
+tests/spidev_test
+tests/RFIDReader_test
