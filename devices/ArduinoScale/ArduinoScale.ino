@@ -33,16 +33,15 @@
 #define STABILIZING_TIME_MS 2000
 #define TARE_ON_START true
 
-#define CALIBRATION_FACTOR -380.0f // Experimentally found
+#define CALIBRATION_FACTOR_GRAMS -380.0f // Experimentally found
 
-float weight = 0;
+float weightGrams = 0;
 
 HX711_ADC LoadCell(HX711_DOUT_PIN, HX711_SCK_PIN);
 
 void setup()
 {
   Serial.begin(57600);
-  delay(10); // Arbitrary
   Serial.println("Starting...");
 
   pinMode(BBG_REQ_PIN, INPUT);
@@ -61,19 +60,19 @@ void setup()
   }
   while (!LoadCell.update());
   // calibrate();
-  LoadCell.setCalFactor(CALIBRATION_FACTOR);
+  LoadCell.setCalFactor(CALIBRATION_FACTOR_GRAMS);
 } 
 
 void loop()
 {
   if (LoadCell.update()) {
-    weight = LoadCell.getData();
+    weightGrams = LoadCell.getData();
     Serial.print("Load_cell output val: ");
-    Serial.println(weight);
+    Serial.println(weightGrams);
   }
   
   if(digitalRead(BBG_REQ_PIN) == HIGH) {
-    exportWeight(weight);
+    exportWeight();
   }
 }
 
@@ -106,14 +105,11 @@ void calibrate()
 
   Serial.print("New calibration value: ");
   Serial.println(newCalibrationValue);
-
-  Serial.println("To re-calibrate, send 'r' from serial monitor.");
-  Serial.println("For manual edit of the calibration value, send 'c' from serial monitor.");
 }
 
-void exportWeight(float weight)
+void exportWeight(void)
 {
-  int weightAsInt = (int)(weight);
+  int weightAsInt = (int)(weightGrams);
   
   for(int i = BITS_PER_INT - 1; i >=0; i--)
   {
