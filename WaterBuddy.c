@@ -27,16 +27,16 @@ static void* startServer(void* _arg)
     system("node server/app.js");
 }
 
-static void addUser(uint64_t rfid)
+static void addUser(uint64_t uid)
 {
     // get up to date form data from server
     HTTP_sendGetRequest("/data");
     
     user_t newUser;
-    newUser.id = rfid;
+    newUser.id = uid;
     // parse formData.json to add the remaining
     // fileds to the struct
-    JSON_getUserDataFromFile(&newUser);
+    JSON_getUserDataFromFile("../formData.json", &newUser);
 
     numberUsers++;
     if (numberUsers == maxNumberUsers) {
