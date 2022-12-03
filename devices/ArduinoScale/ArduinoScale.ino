@@ -26,9 +26,10 @@
 #define HX711_DOUT_PIN  4 //mcu > HX711 dout pin
 #define HX711_SCK_PIN   5 //mcu > HX711 sck pin
 
-#define BBG_REQ_PIN   7
-#define BBG_DATA_PIN  8
+#define BBG_REQ_PIN   11
+#define BBG_ACK_PIN   10
 #define BBG_CLK_PIN   9
+#define BBG_DATA_PIN  8
 
 #define STABILIZING_TIME_MS 2000
 #define TARE_ON_START true
@@ -45,8 +46,12 @@ void setup()
   Serial.println("Starting...");
 
   pinMode(BBG_REQ_PIN, INPUT);
-  pinMode(BBG_DATA_PIN, OUTPUT);
+  pinMode(BBG_ACK_PIN, OUTPUT);
   pinMode(BBG_CLK_PIN, INPUT);
+  pinMode(BBG_DATA_PIN, OUTPUT);
+
+  digitalWrite(BBG_ACK_PIN, LOW);
+  digitalWrite(BBG_DATA_PIN, LOW);
 
   LoadCell.begin();
   LoadCell.start(STABILIZING_TIME_MS, TARE_ON_START);
@@ -72,7 +77,10 @@ void loop()
   }
   
   if(digitalRead(BBG_REQ_PIN) == HIGH) {
+    // Acknowledge
+    digitalWrite(BBG_ACK_PIN, HIGH);
     exportWeight();
+    digitalWrite(BBG_ACK_PIN, LOW);
   }
 }
 
