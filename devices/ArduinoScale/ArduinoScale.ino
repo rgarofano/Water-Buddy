@@ -36,13 +36,15 @@
 
 #define CALIBRATION_FACTOR_GRAMS -380.0f // Experimentally found
 
+#define SERIAL_BAUD_RATE 57600
+
 float weightGrams = 0;
 
 HX711_ADC LoadCell(HX711_DOUT_PIN, HX711_SCK_PIN);
 
 void setup()
 {
-  Serial.begin(57600);
+  Serial.begin(SERIAL_BAUD_RATE);
   Serial.println("Starting...");
 
   pinMode(BBG_REQ_PIN, INPUT);
