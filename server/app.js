@@ -47,7 +47,7 @@ app.post('/', (req, res) => {
 
 const fileSystem = require('fs');
 app.get('/data', (req, res) => {
-    fileSystem.writeFile('../formData.json', JSON.stringify(formData), error => {
+    fileSystem.writeFile('/mnt/remote/myApps/formData.json', JSON.stringify(formData), error => {
         if (error) {
             throw error;
         }
