@@ -18,7 +18,7 @@ RFIDReader_test: clean
 	cp RFIDReader_test $(HOME)/cmpt433/public/myApps/
 
 scale_test: clean
-	$(CC) $(CFLAGS) scale_test.c $(HW_COMMON) -o scale_test
+	$(CC) $(CFLAGS) scale_test.c ../devices/Scale.c $(HW_COMMON) -o scale_test
 	cp scale_test $(HOME)/cmpt433/public/myApps/
 
 
