@@ -33,6 +33,8 @@
 #define STABILIZING_TIME_MS 2000
 #define TARE_ON_START true
 
+#define CALIBRATION_FACTOR -380.0f // Experimentally found
+
 float weight = 0;
 
 HX711_ADC LoadCell(HX711_DOUT_PIN, HX711_SCK_PIN);
@@ -58,7 +60,8 @@ void setup()
     Serial.println("Startup complete");
   }
   while (!LoadCell.update());
-  calibrate();
+  // calibrate();
+  LoadCell.setCalFactor(CALIBRATION_FACTOR);
 } 
 
 void loop()
@@ -102,7 +105,7 @@ void calibrate()
   float newCalibrationValue = LoadCell.getNewCalibration(known_mass); //get the new calibration value
 
   Serial.print("New calibration value: ");
-  Serial.print(newCalibrationValue);
+  Serial.println(newCalibrationValue);
 
   Serial.println("To re-calibrate, send 'r' from serial monitor.");
   Serial.println("For manual edit of the calibration value, send 'c' from serial monitor.");
