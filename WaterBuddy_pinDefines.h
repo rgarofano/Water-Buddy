@@ -21,4 +21,8 @@
 // LCD
 // TODO: Define pins here
 
+// Button
+#define BUTTON_GPIO_PIN "p9_16"
+#define BUTTON_GPIO_NUMBER 51
+
 #endif
