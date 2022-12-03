@@ -9,6 +9,7 @@
 #include "swModules/JSON.h"
 #include "swModules/HTTP.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -25,6 +26,22 @@ static user_t* userData;
 static void* startServer(void* _arg)
 {
     system("node server/app.js");
+}
+
+static void initializeUserArray() 
+{
+    userData = malloc(INIT_ARRAY_SIZE * sizeof(*userData));
+    if (userData == NULL) {
+        perror("Error allocating memory");
+    }
+
+    maxNumberUsers = INIT_ARRAY_SIZE;
+}
+
+static void doubleArraySize()
+{
+    maxNumberUsers *= 2;
+    userData = realloc(userData, maxNumberUsers * sizeof(*userData));
 }
 
 static void addUser(uint64_t uid)
@@ -44,22 +61,6 @@ static void addUser(uint64_t uid)
     }
 
     userData[numberUsers - 1] = newUser;
-}
-
-static void initializeUserArray() 
-{
-    userData = malloc(INIT_ARRAY_SIZE * sizeof(*userData));
-    if (userData == NULL) {
-        perror("Error allocating memory");
-    }
-
-    maxNumberUsers = INIT_ARRAY_SIZE;
-}
-
-static void doubleArraySize()
-{
-    maxNumberUsers *= 2;
-    userData = realloc(userData, maxNumberUsers * sizeof(*userData));
 }
 
 static void init(void)
