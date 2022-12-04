@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../hwCommon/SystemTools.h"
 #include "../hwCommon/GPIO.h"
 
 #include "Button.h"
@@ -13,7 +12,6 @@
 
 void Button_init(char *pin, int gpioNum)
 {
-    configPin(pin, "gpio");
     GPIO_configPin(pin, gpioNum, GPIO_IN);
 
 }
