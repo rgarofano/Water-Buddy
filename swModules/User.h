@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef struct {
-    uint64_t id;
+    uint64_t uid;
     char* phoneNumber;
     double waterIntakeGoalLiters;
     double reminderFrequencyHours;

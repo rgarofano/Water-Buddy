@@ -25,7 +25,6 @@
 /* Thread IDs */
 static pthread_t serverTid;
 static pthread_t rfidTid;
-static pthread_t scaleTid;
 
 /* User Data */
 static int numberUsers = 0;
@@ -50,11 +49,13 @@ static void doubleArraySize()
 
 static void addUser(uint64_t uid)
 {
+    printf("Add User id: %lld\n", uid);
+
     // get up to date form data from server
     HTTP_sendGetRequest("/data");
     
     user_t newUser;
-    newUser.id = uid;
+    newUser.uid = uid;
     // parse formData.json to add the remaining
     // fileds to the struct
     JSON_getUserDataFromFile("../formData.json", &newUser);
@@ -67,11 +68,11 @@ static void addUser(uint64_t uid)
     userData[numberUsers - 1] = newUser;
 }
 
-static bool getIndexOfUser(uint64_t targetUid)
+static int getIndexOfUser(uint64_t targetUid)
 {
     for (int i = 0; i < numberUsers; i++) {
         user_t user = userData[i];
-        if (user.id == targetUid) {
+        if (user.uid == targetUid) {
             return i;
         }
     }
@@ -82,13 +83,16 @@ static bool getIndexOfUser(uint64_t targetUid)
 static void* startServer(void* _arg)
 {
     system("node server/app.js");
+
+    pthread_exit(NULL);
 }
 
 static void* waterDispenser(void* _arg)
 {
     while (true) {
-        uint64_t uid;
+        uint64_t uid = 0;
         enum MFRC522_StatusCode status = RFIDReader_getImmediateUID(&uid);
+        printf("status: %d, uid: %llx\n", status, uid);
         
         if (status == STATUS_TIMEOUT) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
@@ -96,10 +100,13 @@ static void* waterDispenser(void* _arg)
         }
 
         int userIndex = getIndexOfUser(uid);
+        printf("userIndex: %d\n", userIndex);
         if (userIndex == USER_NOT_FOUND) {
             addUser(uid);
             userIndex = numberUsers - 1;
-        } 
+        }
+
+        printf("User%d uid: %llx\n", userIndex, userData[userIndex].uid);
 
         while (!Button_isPressed(BUTTON_GPIO_NUMBER)) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
@@ -107,13 +114,13 @@ static void* waterDispenser(void* _arg)
 
         // scale stuff goes here
     }
+
+    pthread_exit(NULL);
 }
 
 static void init(void)
 {
-    pthread_create(&serverTid, NULL, startServer, NULL);
-    pthread_create(&rfidTid, NULL, waterDispenser, NULL);
-
+    // HW module initialization
     Scale_init( SCALE_REQ_PIN,
                 SCALE_REQ_GPIO,
                 SCALE_ACK_PIN,
@@ -129,10 +136,15 @@ static void init(void)
 
     Button_init(BUTTON_GPIO_PIN, BUTTON_GPIO_NUMBER);
 
+    // SW module initialization
+    pthread_create(&serverTid, NULL, startServer, NULL);
+    pthread_create(&rfidTid, NULL, waterDispenser, NULL);
+
     initializeUserArray();
 }
 
 void WaterBuddy_start(void)
 {
     init();
+    pthread_join(rfidTid, NULL);
 }
