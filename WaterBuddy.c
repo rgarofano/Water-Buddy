@@ -2,11 +2,11 @@
 #include "WaterBuddy.h"
 #include "WaterBuddy_pinDefines.h"
 
+#include "hwCommon/SystemTools.h"
+
 #include "devices/Scale.h"
 #include "devices/RFIDReader.h"
 #include "devices/Button.h"
-
-#include "hwCommon/SystemTools.h"
 
 #include "swModules/User.h"
 #include "swModules/JSON.h"
@@ -22,9 +22,11 @@
 #define HARDWARE_CHECK_DELAY_MS 100
 #define USER_NOT_FOUND -1
 
-/* Thread IDs */
+/* Thread Variables */
 static pthread_t serverTid;
 static pthread_t rfidTid;
+
+#define SERVER_STARTUP_TIME_ESTIMATE_MS 10000
 
 /* User Data */
 static int numberUsers = 0;
@@ -47,7 +49,8 @@ static void doubleArraySize()
     userData = realloc(userData, maxNumberUsers * sizeof(*userData));
 }
 
-static void addUser(uint64_t uid)
+// Returns whether it was successful or not (true on successful, false on fail)
+static bool addUser(uint64_t uid)
 {
     // get up to date form data from server
     HTTP_sendGetRequest("/data");
@@ -56,7 +59,10 @@ static void addUser(uint64_t uid)
     newUser.uid = uid;
     // parse formData.json to add the remaining
     // fileds to the struct
-    JSON_getUserDataFromFile("formData.json", &newUser);
+    bool status = JSON_getUserDataFromFile("formData.json", &newUser);
+    if(status == false) {
+        return false;
+    }
 
     numberUsers++;
     if (numberUsers == maxNumberUsers) {
@@ -64,6 +70,8 @@ static void addUser(uint64_t uid)
     }
 
     userData[numberUsers - 1] = newUser;
+
+    return true;
 }
 
 static int getIndexOfUser(uint64_t targetUid)
@@ -80,6 +88,7 @@ static int getIndexOfUser(uint64_t targetUid)
 
 static void* startServer(void* _arg)
 {
+    printf("Starting Server...\n");
     system("sudo node server/app.js");
 
     pthread_exit(NULL);
@@ -98,8 +107,15 @@ static void* waterDispenser(void* _arg)
 
         int userIndex = getIndexOfUser(uid);
         if (userIndex == USER_NOT_FOUND) {
-            addUser(uid);
+            printf("Attempt to create new user...\n");
+            bool status = addUser(uid);
+            if(status == false) {
+                printf("Create User Failed: No new user data\n");
+                continue;
+            }
+
             userIndex = numberUsers - 1;
+            printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
 
         printf("Waiting for button\n");
@@ -133,6 +149,7 @@ static void init(void)
 
     // SW module initialization
     pthread_create(&serverTid, NULL, startServer, NULL);
+    sleepForMs(SERVER_STARTUP_TIME_ESTIMATE_MS);
     pthread_create(&rfidTid, NULL, waterDispenser, NULL);
 
     initializeUserArray();
