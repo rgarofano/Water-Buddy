@@ -77,3 +77,12 @@ uint8_t I2C_readReg(int i2cFileDesc, uint8_t addr)
 
     return value;
 }
+
+/*Simple I2C Write Function for our LCD Display
+  purposes taken from a pre-existing library
+  
+  Source: https://github.com/Ckath/lcd2004_i2c*/
+void I2C_write(int fd, uint8_t b)
+{
+	write(fd, &b, 1);
+}

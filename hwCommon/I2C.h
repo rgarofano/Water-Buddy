@@ -32,5 +32,6 @@ void I2C_writeReg(int i2cFileDesc, uint8_t addr, uint8_t value);
 
 uint8_t I2C_readReg(int i2cFileDesc, uint8_t addr);
 
+void I2C_write(int fd, uint8_t b);
 
 #endif
