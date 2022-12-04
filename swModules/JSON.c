@@ -46,7 +46,7 @@ static char* getStringFromJson(char* json, char* key, int expectedNumChars)
     return parseValueFromKey(json, key, expectedNumChars);
 }
 
-void JSON_getUserDataFromFile(char* filePath, user_t* userData) 
+void JSON_getUserDataFromFile(char* filePath, user_t* userData)
 {
     FILE* pFile = fopen(filePath, "r");
     if (pFile == NULL) {
