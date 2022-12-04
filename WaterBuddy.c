@@ -4,6 +4,9 @@
 
 #include "devices/Scale.h"
 #include "devices/RFIDReader.h"
+#include "devices/Button.h"
+
+#include "hwCommon/SystemTools.h"
 
 #include "swModules/User.h"
 #include "swModules/JSON.h"
@@ -11,22 +14,23 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <pthread.h>
 
 #define INIT_ARRAY_SIZE 4
+#define HARDWARE_CHECK_DELAY_MS 100
+#define USER_NOT_FOUND -1
 
 /* Thread IDs */
 static pthread_t serverTid;
+static pthread_t rfidTid;
+static pthread_t scaleTid;
 
 /* User Data */
 static int numberUsers = 0;
 static int maxNumberUsers;
 static user_t* userData;
-
-static void* startServer(void* _arg)
-{
-    system("node server/app.js");
-}
 
 static void initializeUserArray() 
 {
@@ -63,9 +67,52 @@ static void addUser(uint64_t uid)
     userData[numberUsers - 1] = newUser;
 }
 
+static bool getIndexOfUser(uint64_t targetUid)
+{
+    for (int i = 0; i < numberUsers; i++) {
+        user_t user = userData[i];
+        if (user.id == targetUid) {
+            return i;
+        }
+    }
+
+    return USER_NOT_FOUND;
+}
+
+static void* startServer(void* _arg)
+{
+    system("node server/app.js");
+}
+
+static void* waterDispenser(void* _arg)
+{
+    while (true) {
+        uint64_t uid;
+        enum MFRC522_StatusCode status = RFIDReader_getImmediateUID(&uid);
+        
+        if (status == STATUS_TIMEOUT) {
+            sleepForMs(HARDWARE_CHECK_DELAY_MS);
+            continue;
+        }
+
+        int userIndex = getIndexOfUser(uid);
+        if (userIndex == USER_NOT_FOUND) {
+            addUser(uid);
+            userIndex = numberUsers - 1;
+        } 
+
+        while (!Button_isPressed(BUTTON_GPIO_NUMBER)) {
+            sleepForMs(HARDWARE_CHECK_DELAY_MS);
+        }
+
+        // scale stuff goes here
+    }
+}
+
 static void init(void)
 {
     pthread_create(&serverTid, NULL, startServer, NULL);
+    pthread_create(&rfidTid, NULL, waterDispenser, NULL);
 
     Scale_init( SCALE_REQ_PIN,
                 SCALE_REQ_GPIO,
@@ -79,6 +126,8 @@ static void init(void)
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
     // TODO: LCD init
+
+    Button_init(BUTTON_GPIO_PIN, BUTTON_GPIO_NUMBER);
 
     initializeUserArray();
 }
