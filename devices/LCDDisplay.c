@@ -4,7 +4,7 @@
 	
 	Our group has added to and modified
 	a pre-existing C Library for interfacing
-	LCD displays.
+	LCD displays for our purposes.
 
 	Source: https://github.com/Ckath/lcd2004_i2c
 */
@@ -60,16 +60,16 @@ LCD *LCDDisplay_init(int bus, int addr)
 	}
 
 	/* required magic taken from pi libs */
-	lcd_send_cmd(lcd, 0x03);
-	lcd_send_cmd(lcd, 0x03);
-	lcd_send_cmd(lcd, 0x03);
-	lcd_send_cmd(lcd, 0x02);
+	LCDDisplay_sendCMD(lcd, 0x03);
+	LCDDisplay_sendCMD(lcd, 0x03);
+	LCDDisplay_sendCMD(lcd, 0x03);
+	LCDDisplay_sendCMD(lcd, 0x02);
 
 	/* initialize display config */
-	lcd_send_cmd(lcd, LCD_ENTRYMODESET | LCD_ENTRYLEFT);
-	lcd_send_cmd(lcd, LCD_FUNCTIONSET | LCD_2LINE);
-	lcd_on(lcd);
-	lcd_clear(lcd);
+	LCDDisplay_sendCMD(lcd, LCD_ENTRYMODESET | LCD_ENTRYLEFT);
+	LCDDisplay_sendCMD(lcd, LCD_FUNCTIONSET | LCD_2LINE);
+	LCDDisplay_on(lcd);
+	LCDDisplay_clear(lcd);
 	return lcd;
 }
 
@@ -80,22 +80,22 @@ void LCDDisplay_delete(LCD *lcd) {
 
 void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode) {
 	uint8_t buf = mode | (val & 0xF0) | lcd->bl;
-	I2C_write(lcd->fd, buf); /* write first nibble */
+	I2C_write(lcd->fd, buf);
 	LCDDisplay_toggle(lcd->fd, buf);
 	buf = mode | ((val << 4) & 0xF0) | lcd->bl;
-	I2C_write(lcd->fd, buf); /* write second nibble */
+	I2C_write(lcd->fd, buf);
 	LCDDisplay_toggle(lcd->fd, buf);
 }
 
 void LCDDisplay_backlight(LCD *lcd, uint8_t on) {
 	lcd->bl = on ? LCD_BACKLIGHT : LCD_NOBACKLIGHT;
-	lcd_on(lcd);
+	LCDDisplay_on(lcd);
 }
 
 void LCDDisplay_write(LCD *lcd, char *data)
 {
 	for (uint8_t i = 0; i < strlen(data); ++i) {
-		lcd_send_chr(lcd, data[i]);
+		LCDDisplay_sendChar(lcd, data[i]);
 	}
 }
 
@@ -116,5 +116,11 @@ void LCDDisplay_move(LCD *lcd, int x, int y)
 			pos_addr += LCD_ROW3;
 			break;
 	}
-	lcd_send_cmd(lcd, pos_addr);
+	LCDDisplay_sendCMD(lcd, pos_addr);
+}
+
+void LCDDisplay_writeLine(LCD * lcd, int line, char* data) {
+	//clear line
+	LCDDisplay_mvWrite(lcd, 0, line, "                    ");
+	LCDDisplay_mvWrite(lcd, 0, line, data);
 }

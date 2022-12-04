@@ -50,12 +50,14 @@ void LCDDisplay_backlight(LCD *lcd, uint8_t on);
 void LCDDisplay_move(LCD *lcd, int x, int y);
 void LCDDisplay_write(LCD *lcd, char *data);
 
+void LCDDisplay_writeLine(LCD * lcd, int line, char* data);
+
 /* convenient wrapper macros */
-#define lcd_mvwrite(lcd, x, y, data) do { LCDDisplay_move(lcd, x, y); LCDDisplay_write(lcd, data); } while (0)
-#define lcd_send_cmd(lcd, cmd) LCDDisplay_sendByte(lcd, cmd, LCD_CMD)
-#define lcd_send_chr(lcd, chr) LCDDisplay_sendByte(lcd, chr, LCD_CHR)
-#define lcd_off(lcd) lcd_send_cmd(lcd, LCD_DISPLAYCONTROL | LCD_DISPLAYOFF)
-#define lcd_on(lcd) lcd_send_cmd(lcd, LCD_DISPLAYCONTROL | LCD_DISPLAYON)
-#define lcd_clear(lcd) do { lcd_send_cmd(lcd, LCD_CLEARDISPLAY); lcd_send_cmd(lcd, LCD_RETURNHOME); } while (0)
-#define lcd_cgramset(lcd, addr) lcd_send_cmd(lcd, LCD_SETCGRAMADDR|((addr)<<3))
+#define LCDDisplay_mvWrite(lcd, x, y, data) do { LCDDisplay_move(lcd, x, y); LCDDisplay_write(lcd, data); } while (0)
+#define LCDDisplay_sendCMD(lcd, cmd) LCDDisplay_sendByte(lcd, cmd, LCD_CMD)
+#define LCDDisplay_sendChar(lcd, chr) LCDDisplay_sendByte(lcd, chr, LCD_CHR)
+#define LCDDisplay_off(lcd) LCDDisplay_sendCMD(lcd, LCD_DISPLAYCONTROL | LCD_DISPLAYOFF)
+#define LCDDisplay_on(lcd) LCDDisplay_sendCMD(lcd, LCD_DISPLAYCONTROL | LCD_DISPLAYON)
+#define LCDDisplay_clear(lcd) do { LCDDisplay_sendCMD(lcd, LCD_CLEARDISPLAY); LCDDisplay_sendCMD(lcd, LCD_RETURNHOME); } while (0)
+#define LCDDisplay_cgramSet(lcd, addr) LCDDisplay_sendCMD(lcd, LCD_SETCGRAMADDR|((addr)<<3))
 #endif

@@ -9,8 +9,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	lcd_mvwrite(lcd, 0, 0, "Water Buddy");
-	lcd_mvwrite(lcd, 0, 1, "Hello");
-	lcd_mvwrite(lcd, 0, 3, "Testing");
+	LCDDisplay_writeLine(lcd, 0, "Water Buddy");
+	LCDDisplay_writeLine(lcd, 0, "Air Buddy");
+	LCDDisplay_writeLine(lcd, 0, "Earth Buddy");
+	LCDDisplay_writeLine(lcd, 0, "Rock Buddy");
+
+
 	return 0;
 }
