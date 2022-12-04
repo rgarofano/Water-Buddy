@@ -17,7 +17,7 @@ all: $(TARGET)
 
 # Main Target
 $(TARGET): clean
-	$(CC_P) $(CFLAGS) $(SOURCES) -o $(TARGET)
+	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET)
 	cp $(TARGET) $(PUBDIR)/
 	mkdir -p $(PUBDIR)/server/
 	cp -R server/* $(PUBDIR)/server/
