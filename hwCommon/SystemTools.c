@@ -30,6 +30,11 @@ long long getTimeInUs(void)
     return totalUs;
 }
 
+double getTimeInHours(void) {
+    long long timeInMs = getTimeInMs();
+    return (double)timeInMs / (double)MS_PER_HOUR;
+}
+
 // sleepForMs was copied from Assignment Document
 void sleepForMs(long long sleepTimeMs)
 {

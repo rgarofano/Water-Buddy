@@ -24,12 +24,16 @@
 #define NS_PER_MS   1000000
 #define NS_PER_US   1000
 
+#define MS_PER_HOUR 3600000
+
 // Returns current time in milliseconds
 // Copied from Assignment 1 Document
 long long getTimeInMs(void);
 
 // Returns current time in microseconds
 long long getTimeInUs(void);
+
+double getTimeInHours(void);
 
 // Copied from Assignment 1 Document
 void sleepForMs(long long sleepTimeMs);

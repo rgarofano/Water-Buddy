@@ -21,11 +21,18 @@
 #define INIT_ARRAY_SIZE 4
 #define HARDWARE_CHECK_DELAY_MS 100
 #define USER_NOT_FOUND -1
+#define REMINDER_CHECK_DELAY_MS 60000
+#define SMS_ROUTE_LENGTH 15
+#define SMS_ROUTE_TEMPLATE "/sms/%s"
+
+/* Mutex */
+static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Thread IDs */
 static pthread_t serverTid;
 static pthread_t waterDispenserTid;
 static pthread_t remindersTid;
+static pthread_t sendTextTid;
 
 /* User Data */
 static int numberUsers = 0;
@@ -60,22 +67,30 @@ static void addUser(uint64_t uid)
     // fileds to the struct
     JSON_getUserDataFromFile("formData.json", &newUser);
 
-    numberUsers++;
-    if (numberUsers == maxNumberUsers) {
-        doubleArraySize();
+    pthread_mutex_lock(&userDataMutex);
+    {
+        numberUsers++;
+        if (numberUsers == maxNumberUsers) {
+            doubleArraySize();
+        }
     }
+    pthread_mutex_unlock(&userDataMutex);
 
     userData[numberUsers - 1] = newUser;
 }
 
 static int getIndexOfUser(uint64_t targetUid)
 {
-    for (int i = 0; i < numberUsers; i++) {
-        user_t user = userData[i];
-        if (user.uid == targetUid) {
-            return i;
+    pthread_mutex_lock(&userDataMutex);
+    {
+        for (int i = 0; i < numberUsers; i++) {
+            user_t user = userData[i];
+            if (user.uid == targetUid) {
+                return i;
+            }
         }
     }
+    pthread_mutex_unlock(&userDataMutex);
 
     return USER_NOT_FOUND;
 }
@@ -87,8 +102,44 @@ static void* startServer(void* _arg)
     pthread_exit(NULL);
 }
 
+static void* sendTextMessage(void* phoneNumber)
+{
+    char* phone = (char*)phoneNumber;
+    char buffer[SMS_ROUTE_LENGTH + 1];
+    snprintf(buffer, SMS_ROUTE_LENGTH, SMS_ROUTE_TEMPLATE, phone);
+    buffer[SMS_ROUTE_LENGTH] = 0;
+    HTTP_sendPostRequest(buffer);
+    pthread_exit(NULL);
+}
+
 static void* sendReminders(void* _arg)
 {
+    double timeElapsedHours = 0;
+    while (true) {
+        double startTimeHours = getTimeInHours();
+        pthread_mutex_lock(&userDataMutex);
+        {
+            for (int i = 0; i < numberUsers; i++) {
+                double lastReminderTime = 
+                    userData[i].lastReminderTimeHours;
+
+                double timeSinceLastReminder =
+                    timeElapsedHours - lastReminderTime;
+
+                double timeBetweenReminders = 
+                    userData[i].reminderFrequencyHours;       
+                
+                if (timeSinceLastReminder >= timeBetweenReminders) {
+                    pthread_create(&sendTextTid, NULL, sendTextMessage, userData[i].phoneNumber);
+                    userData[i].lastReminderTimeHours = getTimeInHours();
+                }
+            }
+        }
+        pthread_mutex_unlock(&userDataMutex);
+
+        sleepForMs(REMINDER_CHECK_DELAY_MS);
+        timeElapsedHours += getTimeInHours() - startTimeHours;
+    }
     pthread_exit(NULL);
 }
 
@@ -149,5 +200,5 @@ static void init(void)
 void WaterBuddy_start(void)
 {
     init();
-    pthread_join(rfidTid, NULL);
+    pthread_join(waterDispenserTid, NULL);
 }
