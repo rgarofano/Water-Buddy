@@ -8,10 +8,7 @@
 
 #include "../devices/RFIDReader.h"
 
-#define SPI_PORT_NUM 1
-#define SPI_CHIP_SEL 0
-#define RST_PIN "p9_11"
-#define RST_GPIO_NUM 30
+#include "../WaterBuddy_pinDefines.h"
 
 static int check(bool condition) {
     if(condition) {
@@ -27,7 +24,7 @@ static int check(bool condition) {
 static void testFIFO(void)
 {
     printf("\ntestFIFO\n");
-    RFIDReader_init(SPI_PORT_NUM, SPI_CHIP_SEL, RST_PIN, RST_GPIO_NUM);
+    RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
 
     uint8_t size = 6;
 
@@ -62,7 +59,7 @@ static void testRequestUID(void)
 {
     printf("\ntestGetUID\n");
 
-    RFIDReader_init(SPI_PORT_NUM, SPI_CHIP_SEL, RST_PIN, RST_GPIO_NUM);
+    RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
 
     uint64_t uid = 0;
 
@@ -85,7 +82,7 @@ static void testGetImmediateUID(void)
 {
     printf("\ntestGetImmediateUID\n");
 
-    RFIDReader_init(SPI_PORT_NUM, SPI_CHIP_SEL, RST_PIN, RST_GPIO_NUM);
+    RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
 
     uint64_t uid = 0;
 
@@ -113,7 +110,7 @@ static void runTestSuite(void)
     for(int i = 0; i < NUM_TESTS; i++) {
         sleepForMs(100);
         (*testFunctions[i])();
-        GPIO_write(RST_GPIO_NUM, 0);
+        GPIO_write(RFID_RST_GPIO, 0);
     }
 }
 
