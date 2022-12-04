@@ -24,7 +24,8 @@
 
 /* Thread IDs */
 static pthread_t serverTid;
-static pthread_t rfidTid;
+static pthread_t waterDispenserTid;
+static pthread_t remindersTid;
 
 /* User Data */
 static int numberUsers = 0;
@@ -54,6 +55,7 @@ static void addUser(uint64_t uid)
     
     user_t newUser;
     newUser.uid = uid;
+    newUser.lastReminderTimeHours = 0;
     // parse formData.json to add the remaining
     // fileds to the struct
     JSON_getUserDataFromFile("formData.json", &newUser);
@@ -82,6 +84,11 @@ static void* startServer(void* _arg)
 {
     system("sudo node server/app.js");
 
+    pthread_exit(NULL);
+}
+
+static void* sendReminders(void* _arg)
+{
     pthread_exit(NULL);
 }
 
@@ -133,7 +140,8 @@ static void init(void)
 
     // SW module initialization
     pthread_create(&serverTid, NULL, startServer, NULL);
-    pthread_create(&rfidTid, NULL, waterDispenser, NULL);
+    pthread_create(&waterDispenserTid, NULL, waterDispenser, NULL);
+    pthread_create(&remindersTid, NULL, waterDispenser, NULL);
 
     initializeUserArray();
 }
