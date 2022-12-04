@@ -1,7 +1,9 @@
 
 CC = arm-linux-gnueabihf-gcc
 CFLAGS = -Wall -g -std=c99 -D _POSIX_C_SOURCE=200809L -pthread #-Werror
-# -Werror: treat warnings as errors
+
+CC_P = arm-linux-gnueabihf-g++
+CPP_CFLAGS = -Wall -g -std=c++11 -D _POSIX_C_SOURCE=200809L -pthread #-Werror
 
 HW_COMMON = $(wildcard hwCommon/*.c)
 DEVICES = $(wildcard devices/*.c)
@@ -15,7 +17,7 @@ all: $(TARGET)
 
 # Main Target
 $(TARGET): clean
-	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET)
+	$(CC_P) $(CFLAGS) $(SOURCES) -o $(TARGET)
 	cp $(TARGET) $(PUBDIR)/
 	mkdir -p $(PUBDIR)/server/
 	cp -R server/* $(PUBDIR)/server/
