@@ -31,7 +31,7 @@ static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
 /* Thread IDs */
 static pthread_t serverTid;
 static pthread_t waterDispenserTid;
-static pthread_t remindersTid;
+static pthread_t schedulerTid;
 static pthread_t sendTextTid;
 
 /* User Data */
@@ -102,7 +102,7 @@ static void* startServer(void* _arg)
     pthread_exit(NULL);
 }
 
-static void* sendTextMessage(void* phoneNumber)
+static void* sendReminder(void* phoneNumber)
 {
     char* phone = (char*)phoneNumber;
     char buffer[SMS_ROUTE_LENGTH + 1];
@@ -112,7 +112,7 @@ static void* sendTextMessage(void* phoneNumber)
     pthread_exit(NULL);
 }
 
-static void* sendReminders(void* _arg)
+static void* scheduleReminders(void* _arg)
 {
     while (true) {
         pthread_mutex_lock(&userDataMutex);
@@ -189,7 +189,7 @@ static void init(void)
     // SW module initialization
     pthread_create(&serverTid, NULL, startServer, NULL);
     pthread_create(&waterDispenserTid, NULL, waterDispenser, NULL);
-    pthread_create(&remindersTid, NULL, waterDispenser, NULL);
+    pthread_create(&schedulerTid, NULL, scheduleReminders, NULL);
 
     initializeUserArray();
 }
