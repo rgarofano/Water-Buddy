@@ -192,7 +192,6 @@ static void* updateRegisterUserDisplay(void* _arg)
 static void* waterDispenser(void* _arg)
 {
     while (true) {
-        printf("Welcome to WaterBuddy\n");
         DisplayText_idleMessage();
 
         uint64_t uid = 0;
@@ -210,12 +209,12 @@ static void* waterDispenser(void* _arg)
         if (userIsNew) {
             printf("Attempt to create new user...\n");
             pthread_create(&displayTid, NULL, updateRegisterUserDisplay, NULL);
-            bool status = false;
-            while (!status && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
+            bool addUserStatus = false;
+            while (!addUserStatus && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
                 
-                status = addUser(uid);
+                addUserStatus = addUser(uid);
 
-                if(status == false) {
+                if(addUserStatus == false) {
                     printf("Create User Failed: No new user data\n");
                     continue;
                 }
@@ -229,6 +228,10 @@ static void* waterDispenser(void* _arg)
                 DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLiters);
                 printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
             }
+
+            if(RFIDReader_getActivePiccUID(&uid) != STATUS_OK) {
+                pthread_cancel(displayTid);
+            }
         }
         else {
             DisplayText_welcomeExistingUserMessage(
@@ -241,13 +244,6 @@ static void* waterDispenser(void* _arg)
         while(RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
 
             // Wait for button Press
-            if(!userIsNew) {
-                DisplayText_welcomeExistingUserMessage(
-                    userData[userIndex].waterIntakeGoalLiters,
-                    userData[userIndex].waterIntakeGoalLiters - userData[userIndex].waterIntakeProgressLitres
-                );
-            }
-
             printf("Start Filling\n");
 
             while (!Button_isPressed(DISPENSE_BUTTON_GPIO) && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
