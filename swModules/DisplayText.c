@@ -13,7 +13,7 @@
 
 #define CHARS_PER_LINE 20
 
-#define PROPORTION_OF_GOAL 0.8
+#define PROPORTION_OF_GOAL 0.2
 #define GOAL_THRESHOLD(goal, proportion) (proportion * goal)
 
 #define GOAL_TEMPLATE      "  Goal: %.1lf Liters  "
@@ -75,7 +75,7 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
     }
 
     bool closeToGoal = 
-        amountRemaining >= GOAL_THRESHOLD(goalAmount, PROPORTION_OF_GOAL);
+        amountRemaining <= GOAL_THRESHOLD(goalAmount, PROPORTION_OF_GOAL);
     
     char* thirdLineMessage = closeToGoal ? "  You're so close!  "
                                          : "  Keep on drinking  ";
