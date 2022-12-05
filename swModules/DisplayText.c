@@ -22,6 +22,54 @@
 #define REMAINING_TEMPLATE "%.1lf Liters Remaining"
 #define AMOUNT_TEMPLATE    "%4d ml"
 
+#define NUM_JOKES 5
+
+typedef struct {
+    char* firstLineMessage;
+    char* secondLineMessage;
+    char* thirdLineMessage;
+    char* fourthLineMessage;
+} joke_t;
+
+static int jokeIndex = 0;
+
+static joke_t jokes[NUM_JOKES] = 
+{
+    {
+        "       Always       ",
+        "        Keep        ",
+        "       Things       ",
+        "       Tide-y       "
+    
+    },
+    {
+        "This is a joke about",
+        "    a submarine     ",
+        "     let that       ",
+        "     sink in..      "
+    
+    },
+    {
+        " What do you call a ",
+        "  group of singing  ",
+        "       whales?      ",
+        "    An orca-stra    "
+    },
+    {
+        "  I never believed  ",
+        " water could freeze ",
+        "    but now icy     ",
+        "                    "
+    },
+    {
+        "What do you call two",
+        "  days in a row of  ",
+        " rain in Vancouver? ",
+        "    The weekend     "
+    
+    }
+}; 
+
 static LCD* lcd;
 
 enum LAST_MESSAGE {
@@ -147,6 +195,11 @@ void DisplayText_postDispenseMessage(int amountRemainingML)
         LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");
 
     } else {
-        // dad jokes
+        LCDDisplay_writeLine(lcd, FIRST_LINE, jokes[jokeIndex].firstLineMessage);
+        LCDDisplay_writeLine(lcd, SECOND_LINE, jokes[jokeIndex].secondLineMessage);
+        LCDDisplay_writeLine(lcd, THIRD_LINE, jokes[jokeIndex].thirdLineMessage);
+        LCDDisplay_writeLine(lcd, FOURTH_LINE, jokes[jokeIndex].fourthLineMessage);
+
+        jokeIndex = (jokeIndex + 1) % NUM_JOKES;
     }
 }
