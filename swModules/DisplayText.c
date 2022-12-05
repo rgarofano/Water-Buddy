@@ -34,12 +34,9 @@ enum LAST_MESSAGE {
 
 static enum LAST_MESSAGE lastMessage = NO_MESSAGE;
 
-void DisplayText_init(void)
+void DisplayText_init(int bus)
 {
-    lcd = LCDDisplay_iLCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
-    LCDDisplay_writeLine(lcd, SECOND_LINE, "    Filling Up...   ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE,  "  Dispensed: ");
-    LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");nit(LCD_I2C_BUS, LCD_I2C_ADDR);
+    lcd = LCDDisplay_init(bus);
 }
 
 void DisplayText_idleMessage(void)
