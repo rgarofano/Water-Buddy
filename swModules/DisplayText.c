@@ -53,7 +53,7 @@ void DisplayText_idleMessage(void)
 void DisplayText_waitingForUserDataMessage(void)
 {   
     if (lastMessage != REGISTER) {
-        LCDDisplay_writeLine(lcd, SECOND_LINE, "Registering New User");
+        LCDDisplay_writeLine(lcd, SECOND_LINE, " Register New User ");
     }
 
     LCDDisplay_writeLine(lcd, THIRD_LINE, "                     ");

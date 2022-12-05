@@ -176,6 +176,7 @@ static void* waterDispenser(void* _arg)
         // Add user if uid not registered
         if (userIsNew) {
             printf("Attempt to create new user...\n");
+            DisplayText_waitingForUserDataMessage();
             bool status = addUser(uid);
             if(status == false) {
                 printf("Create User Failed: No new user data\n");
