@@ -18,6 +18,7 @@
 
 #define GOAL_TEMPLATE      "  Goal: %.1lf Liters  "
 #define REMAINING_TEMPLATE "%.1lf Liters Remaining"
+#define FILLING_TEMPLATE   "  Dispensed: %4d   "
 
 static LCD* lcd;
 
@@ -27,6 +28,7 @@ enum LAST_MESSAGE {
     REGISTER = 1,
     NEW_USER = 2,
     EXISTING_USER = 3,
+    FILLING = 4
 };
 
 static enum LAST_MESSAGE lastMessage = NO_MESSAGE;
@@ -112,4 +114,21 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
     LCDDisplay_writeLine(lcd, FOURTH_LINE, amountRemainingMessage);
 
     lastMessage = EXISTING_USER;
+}
+
+void DisplayText_fillingUpMessage(int currentVolumeML)
+{
+    char dispensedMessage[CHARS_PER_LINE + 1];
+    snprintf(dispensedMessage, CHARS_PER_LINE + 1, FILLING_TEMPLATE, currentVolumeML);
+    LCDDisplay_writeLine(lcd, THIRD_LINE,  dispensedMessage);
+
+    if (lastMessage == FILLING) {
+        return;
+    }
+
+    LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
+    LCDDisplay_writeLine(lcd, SECOND_LINE, "    Filling Up...   ");
+    LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");
+
+    lastMessage = FILLING;
 }
