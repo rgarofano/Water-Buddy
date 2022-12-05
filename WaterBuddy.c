@@ -21,22 +21,27 @@
 #include <pthread.h>
 
 #define INIT_ARRAY_SIZE 4
-#define HARDWARE_CHECK_DELAY_MS 100
 #define USER_NOT_FOUND -1
+
+#define HARDWARE_CHECK_DELAY_MS 100
 #define REMINDER_CHECK_DELAY_MS 60000
+#define LCD_WRITE_DELAY_MS 200
+
 #define SMS_ROUTE_LENGTH 15
 #define SMS_ROUTE_TEMPLATE "/sms/%s"
 
 #define ML_PER_L 1000
 
-/* Mutex */
+/* Mutex Variables */
 static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t userRegisterMutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Thread Variables */
+/* Thread IDs */
 static pthread_t serverTid;
 static pthread_t waterDispenserTid;
 static pthread_t schedulerTid;
 static pthread_t sendReminderTid;
+static pthread_t displayTid;
 
 #define SERVER_STARTUP_TIME_ESTIMATE_MS 10000
 
@@ -44,6 +49,7 @@ static pthread_t sendReminderTid;
 static int numberUsers = 0;
 static int maxNumberUsers;
 static user_t* userData;
+static bool userRegistered = false;
 
 static void initializeUserArray() 
 {
@@ -156,15 +162,30 @@ static void* scheduleReminders(void* _arg)
     pthread_exit(NULL);
 }
 
+static void* updateRegisterUserDisplay(void* _arg)
+{
+    while (true) {
+        pthread_mutex_lock(&userRegisterMutex);
+        if (userRegistered == true) {
+            break;
+        }
+        pthread_mutex_unlock(&userRegisterMutex);
+
+        DisplayText_waitingForUserDataMessage();
+        sleepForMs(LCD_WRITE_DELAY_MS);
+    }
+
+    userRegistered = false;
+    pthread_exit(NULL);
+}
+
 static void* waterDispenser(void* _arg)
 {
     while (true) {
         DisplayText_idleMessage();
-        printf("Welcome to WaterBuddy :)\n");
-
         uint64_t uid = 0;
         enum MFRC522_StatusCode status = RFIDReader_requestPiccAndGetUID(&uid);
-        
+
         if (status != STATUS_OK) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
             continue;
@@ -176,16 +197,25 @@ static void* waterDispenser(void* _arg)
         // Add user if uid not registered
         if (userIsNew) {
             printf("Attempt to create new user...\n");
-            DisplayText_waitingForUserDataMessage();
-            bool status = addUser(uid);
-            if(status == false) {
-                printf("Create User Failed: No new user data\n");
-                continue;
-            }
+            pthread_create(&displayTid, NULL, updateRegisterUserDisplay, NULL);
+            bool status = false;
+            while (!status && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
+                
+                status = addUser(uid);
 
-            userIndex = numberUsers - 1;
-            DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLiters);
-            printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
+                if(status == false) {
+                    printf("Create User Failed: No new user data\n");
+                    continue;
+                }
+                
+                pthread_mutex_lock(&userRegisterMutex);
+                userRegistered = true;
+                pthread_mutex_unlock(&userRegisterMutex);
+
+                userIndex = numberUsers - 1;
+                DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLiters);
+                printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
+            }
         }
         else {
             DisplayText_welcomeExistingUserMessage(
