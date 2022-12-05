@@ -51,7 +51,13 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
     char* thirdLineMessage = closeToGoal ? "  You're so close!  "
                                          : "  Keep on drinking  ";
 
+    char amountRemainingMessage[CHARS_PER_LINE + 1];
+    snprintf(amountRemainingMessage, CHARS_PER_LINE, REMAINING_TEMPLATE, amountRemaining);
+    amountRemainingMessage[CHARS_PER_LINE] = 0;
+
     LCDDisplay_writeLine(lcd, FIRST_LINE,  "   Welcome Back :)  ");
     LCDDisplay_writeLine(lcd, SECOND_LINE, "  Did you miss me?  ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE,  "  You're so close!  ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, thirdLineMessage);
+    LCDDisplay_writeLine(lcd, FOURTH_LINE, amountRemainingMessage);
+
 }
