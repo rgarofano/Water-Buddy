@@ -21,6 +21,15 @@
 
 static LCD* lcd;
 
+enum LAST_MESSAGE {
+    NO_MESSAGE = -1,
+    IDLE = 0,
+    REGISTER = 1,
+    EXISTING_USER = 2,
+};
+
+static enum LAST_MESSAGE lastMessage = NO_MESSAGE;
+
 void DisplayText_init(void)
 {
     lcd = LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
@@ -28,14 +37,24 @@ void DisplayText_init(void)
 
 void DisplayText_idleMessage(void)
 {
+    if (lastMessage == IDLE) {
+        return;
+    }
+
     LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
     LCDDisplay_writeLine(lcd, SECOND_LINE, "   Water Buddy :)   ");
     LCDDisplay_writeLine(lcd, THIRD_LINE,  "--------------------");
     LCDDisplay_writeLine(lcd, FOURTH_LINE, "its time to drink up");
+
+    lastMessage = IDLE;
 }
 
 void DisplayText_registerUserMessage(double goalAmount)
 {
+    if (lastMessage == REGISTER) {
+        return;
+    }
+
     char goalMessage[CHARS_PER_LINE + 1];
     snprintf(goalMessage, CHARS_PER_LINE + 1, GOAL_TEMPLATE, goalAmount);
     goalMessage[CHARS_PER_LINE] = 0;
@@ -44,10 +63,17 @@ void DisplayText_registerUserMessage(double goalAmount)
     LCDDisplay_writeLine(lcd, SECOND_LINE, " I see hydration in ");
     LCDDisplay_writeLine(lcd, THIRD_LINE,  "   in your future   ");
     LCDDisplay_writeLine(lcd, FOURTH_LINE, goalMessage);
+
+    lastMessage = REGISTER;
 }
 
 void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRemaining)
 {
+
+    if (lastMessage == EXISTING_USER) {
+        return;
+    }
+
     bool closeToGoal = 
         amountRemaining >= GOAL_THRESHOLD(goalAmount, PROPORTION_OF_GOAL);
     
@@ -63,4 +89,5 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
     LCDDisplay_writeLine(lcd, THIRD_LINE, thirdLineMessage);
     LCDDisplay_writeLine(lcd, FOURTH_LINE, amountRemainingMessage);
 
+    lastMessage = EXISTING_USER;
 }
