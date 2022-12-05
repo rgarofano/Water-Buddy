@@ -26,6 +26,7 @@
 #define HARDWARE_CHECK_DELAY_MS 100
 #define REMINDER_CHECK_DELAY_MS 60000
 #define LCD_WRITE_DELAY_MS 200
+#define POST_DISPENSE_MESSAGE_DELAY_MS 5000
 
 #define SMS_ROUTE_LENGTH 15
 #define SMS_ROUTE_TEMPLATE "/sms/%s"
@@ -245,7 +246,6 @@ static void* waterDispenser(void* _arg)
 
         // While tagged container is present
         while(RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
-
             // Wait for button Press
             printf("Start Filling\n");
 
@@ -254,7 +254,6 @@ static void* waterDispenser(void* _arg)
             }
 
             if(RFIDReader_getActivePiccUID(&uid) != STATUS_OK) {
-                sleepForMs(HARDWARE_CHECK_DELAY_MS);
                 break;
             }
 
@@ -269,12 +268,17 @@ static void* waterDispenser(void* _arg)
 
             dispensedWeightGrams = (dispensedWeightGrams < 0) ? 0 : dispensedWeightGrams;
 
-            totalDispensedWeightGrams += dispensedWeightGrams;       
+            totalDispensedWeightGrams += dispensedWeightGrams;
+            printf("dispensed: %d\n", dispensedWeightGrams);
+            printf("Total weight: %d\n", totalDispensedWeightGrams);
+        }
+
+        if(totalDispensedWeightGrams == 0) {
+            continue;
         }
 
         // Calculate the dispensed volume
         double dispensedVolumeL = (double)totalDispensedWeightGrams / (double)ML_PER_L;
-        userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
         
         // Calculate amount remaining
         double amountRemainingL = userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres;
@@ -294,7 +298,7 @@ static void* waterDispenser(void* _arg)
         );
 
         userIsNew = false;
-        sleepForMs(HARDWARE_CHECK_DELAY_MS);
+        sleepForMs(POST_DISPENSE_MESSAGE_DELAY_MS);
     }
 
     pthread_exit(NULL);
