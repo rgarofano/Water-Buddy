@@ -19,7 +19,7 @@
 
 #define GOAL_TEMPLATE      "  Goal: %.1lf Liters  "
 #define REMAINING_TEMPLATE "%.1lf Liters Remaining"
-#define AMOUNT_TEMPLATE    "%4d   "
+#define AMOUNT_TEMPLATE    "%4d ml"
 
 static LCD* lcd;
 
@@ -133,4 +133,19 @@ void DisplayText_fillingUpMessage(int currentVolumeML)
     LCDDisplay_mvWrite(lcd, 14, THIRD_LINE, amountDispensed);
 
     lastMessage = FILLING;
+}
+
+void DisplayText_postDispenseMessage(int amountRemaining)
+{
+    bool goalReached = (amountRemaining == 0);
+
+    if (goalReached) {
+        LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
+        LCDDisplay_writeLine(lcd, SECOND_LINE, "Woohoo! you made it!");
+        LCDDisplay_writeLine(lcd, THIRD_LINE,  "See you tomorrow :) ");
+        LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");
+
+    } else {
+        // dad jokes
+    }
 }
