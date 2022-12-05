@@ -1,8 +1,11 @@
+
+#include "JSON.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "User.h"
+#include "../hwCommon/SystemTools.h"
 
 #define BUFF_SIZE 1024
 #define KEY_PHONE_NUMBER "phone"
@@ -15,6 +18,9 @@
 static char* parseValueFromKey(char* json, char* key, int size)
 {
     char* keyStart = strstr(json, key);
+    if(keyStart == NULL) {
+        return NULL;
+    }
     int charIndex = 0;
     // get the index of the first character of the value
     // stored by this key
@@ -24,6 +30,8 @@ static char* parseValueFromKey(char* json, char* key, int size)
     
 
     char* buff = malloc((size + 1) * sizeof(*buff));
+    memset(buff, 0, size + 1);
+
     int buffIndex = 0;
     while (atoi("\"") != (int)keyStart[charIndex] && buffIndex < size) {
         buff[buffIndex++] = keyStart[charIndex++];
@@ -46,19 +54,23 @@ static char* getStringFromJson(char* json, char* key, int expectedNumChars)
     return parseValueFromKey(json, key, expectedNumChars);
 }
 
-void JSON_getUserDataFromFile(char* filePath, user_t* userData)
+bool JSON_getUserDataFromFile(char* filePath, user_t* userData)
 {
-    FILE* pFile = fopen(filePath, "r");
-    if (pFile == NULL) {
-        perror("Error Opening File");
-    }
+    FILE* pFile = fopenWithCheck(filePath, "r");
 
     char buffer[BUFF_SIZE];
     fread(buffer, BUFF_SIZE, sizeof(char), pFile);
     fclose(pFile);
+
+    // Clear existing user data
+    pFile = fopenWithCheck(filePath, "w");
+    fclose(pFile);
     
     char* phoneNumber = 
         getStringFromJson(buffer, KEY_PHONE_NUMBER, NUM_CHARS_PHONE_NUMBER);
+    if(phoneNumber == NULL) {
+        return false;
+    }
     userData->phoneNumber = phoneNumber;
 
     double waterIntake = 
@@ -68,4 +80,6 @@ void JSON_getUserDataFromFile(char* filePath, user_t* userData)
     double reminderFrequency = 
         getDoubleFromJson(buffer, KEY_REMINDER_FREQUENCY, NUM_CHARS_REMINDER_FREQUENCY);
     userData->reminderFrequencyHours = reminderFrequency;
+
+    return true;
 }
