@@ -19,7 +19,8 @@
 #define RFID_RST_GPIO       48
 
 // LCD
-// TODO: Define pins here
+#define LCD_I2C_BUS     1
+#define LCD_I2C_ADDR    0x27
 
 // Button
 #define BUTTON_GPIO_PIN "p9_16"
