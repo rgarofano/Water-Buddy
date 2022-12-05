@@ -45,7 +45,6 @@ typedef struct lcd LCD;
 
 LCD *LCDDisplay_init(int bus, int addr);
 void LCDDisplay_delete(LCD *lcd);
-void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode); /* <- not meant for direct calling */
 void LCDDisplay_backlight(LCD *lcd, uint8_t on);
 void LCDDisplay_move(LCD *lcd, int x, int y);
 void LCDDisplay_write(LCD *lcd, char *data);

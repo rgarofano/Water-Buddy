@@ -78,7 +78,7 @@ void LCDDisplay_delete(LCD *lcd) {
 	free(lcd);
 }
 
-void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode) {
+static void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode) {
 	uint8_t buf = mode | (val & 0xF0) | lcd->bl;
 	I2C_write(lcd->fd, buf);
 	LCDDisplay_toggle(lcd->fd, buf);
