@@ -22,6 +22,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "RFIDReader_data.h"
 
@@ -72,5 +73,7 @@ enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid);
 // Sends Request PICC command first, then gets the UID of the PICC in the vicinity and stores it in uid
 // Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
 enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid);
+
+bool RFIDReader_isTagPresent(void);
 
 #endif

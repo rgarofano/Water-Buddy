@@ -250,3 +250,10 @@ enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid)
     status = RFIDReader_selectPICCAndGetUID(uid);
     return status;
 }
+
+bool RFIDReader_isTagPresent(void)
+{
+    uint64_t tempUid = 0;
+    enum MFRC522_StatusCode status = RFIDReader_getImmediateUID(&tempUid);
+    return ((status == STATUS_OK) && (tempUid != 0));
+}
