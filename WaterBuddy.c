@@ -22,10 +22,18 @@
 #define INIT_ARRAY_SIZE 4
 #define HARDWARE_CHECK_DELAY_MS 100
 #define USER_NOT_FOUND -1
+#define REMINDER_CHECK_DELAY_MS 60000
+#define SMS_ROUTE_LENGTH 15
+#define SMS_ROUTE_TEMPLATE "/sms/%s"
+
+/* Mutex */
+static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Thread Variables */
 static pthread_t serverTid;
-static pthread_t rfidTid;
+static pthread_t waterDispenserTid;
+static pthread_t schedulerTid;
+static pthread_t sendReminderTid;
 
 #define SERVER_STARTUP_TIME_ESTIMATE_MS 10000
 
@@ -58,6 +66,7 @@ static bool addUser(uint64_t uid)
     
     user_t newUser;
     newUser.uid = uid;
+    newUser.lastReminderTimeHours = getTimeInHours();
     // parse formData.json to add the remaining
     // fileds to the struct
     bool status = JSON_getUserDataFromFile("formData.json", &newUser);
@@ -65,26 +74,37 @@ static bool addUser(uint64_t uid)
         return false;
     }
 
-    numberUsers++;
-    if (numberUsers == maxNumberUsers) {
-        doubleArraySize();
-    }
+    pthread_mutex_lock(&userDataMutex);
+    {
+        numberUsers++;
+        if (numberUsers == maxNumberUsers) {
+            doubleArraySize();
+        }
 
-    userData[numberUsers - 1] = newUser;
+        userData[numberUsers - 1] = newUser;
+    }
+    pthread_mutex_unlock(&userDataMutex);
 
     return true;
 }
 
 static int getIndexOfUser(uint64_t targetUid)
 {
-    for (int i = 0; i < numberUsers; i++) {
-        user_t user = userData[i];
-        if (user.uid == targetUid) {
-            return i;
+    int index = USER_NOT_FOUND;
+
+    pthread_mutex_lock(&userDataMutex);
+    {
+        for (int i = 0; i < numberUsers; i++) {
+            user_t user = userData[i];
+            if (user.uid == targetUid) {
+                index = i;
+                break;
+            }
         }
     }
+    pthread_mutex_unlock(&userDataMutex);
 
-    return USER_NOT_FOUND;
+    return index;
 }
 
 static void* startServer(void* _arg)
@@ -92,6 +112,44 @@ static void* startServer(void* _arg)
     printf("Starting Server...\n");
     system("sudo node server/app.js");
 
+    pthread_exit(NULL);
+}
+
+static void* sendReminder(void* phoneNumber)
+{
+    char* phone = (char*)phoneNumber;
+    char buffer[SMS_ROUTE_LENGTH + 1];
+    snprintf(buffer, SMS_ROUTE_LENGTH, SMS_ROUTE_TEMPLATE, phone);
+    buffer[SMS_ROUTE_LENGTH] = 0;
+    HTTP_sendPostRequest(buffer);
+    pthread_exit(NULL);
+}
+
+static void* scheduleReminders(void* _arg)
+{
+    while (true) {
+        pthread_mutex_lock(&userDataMutex);
+        {
+            for (int i = 0; i < numberUsers; i++) {
+                double lastReminderTime = 
+                    userData[i].lastReminderTimeHours;
+
+                double timeSinceLastReminder =
+                    getTimeInHours() - lastReminderTime;
+
+                double timeBetweenReminders = 
+                    userData[i].reminderFrequencyHours;       
+                
+                if (timeSinceLastReminder >= timeBetweenReminders) {
+                    pthread_create(&sendReminderTid, NULL, sendReminder, userData[i].phoneNumber);
+                    userData[i].lastReminderTimeHours = getTimeInHours();
+                }
+            }
+        }
+        pthread_mutex_unlock(&userDataMutex);
+
+        sleepForMs(REMINDER_CHECK_DELAY_MS);
+    }
     pthread_exit(NULL);
 }
 
@@ -152,8 +210,8 @@ static void init(void)
 
     // SW module initialization
     pthread_create(&serverTid, NULL, startServer, NULL);
-    sleepForMs(SERVER_STARTUP_TIME_ESTIMATE_MS);
-    pthread_create(&rfidTid, NULL, waterDispenser, NULL);
+    pthread_create(&waterDispenserTid, NULL, waterDispenser, NULL);
+    pthread_create(&schedulerTid, NULL, scheduleReminders, NULL);
 
     initializeUserArray();
 }
@@ -161,5 +219,5 @@ static void init(void)
 void WaterBuddy_start(void)
 {
     init();
-    pthread_join(rfidTid, NULL);
+    pthread_join(waterDispenserTid, NULL);
 }
