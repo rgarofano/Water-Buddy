@@ -51,6 +51,8 @@ void LCDDisplay_write(LCD *lcd, char *data);
 
 void LCDDisplay_writeLine(LCD * lcd, int line, char* data);
 
+void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode);
+
 /* convenient wrapper macros */
 #define LCDDisplay_mvWrite(lcd, x, y, data) do { LCDDisplay_move(lcd, x, y); LCDDisplay_write(lcd, data); } while (0)
 #define LCDDisplay_sendCMD(lcd, cmd) LCDDisplay_sendByte(lcd, cmd, LCD_CMD)

@@ -1,8 +1,10 @@
 #include "../devices/LCDDisplay.h"
 
-#include "WaterBuddy_pinDefines.h"
+#include "../WaterBuddy_pinDefines.h"
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 #define  FIRST_LINE 0
 #define SECOND_LINE 1
@@ -19,7 +21,8 @@
 
 static LCD* lcd;
 
-void DisplayText_init(void) {
+void DisplayText_init(void)
+{
     lcd = LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
 }
 
@@ -34,7 +37,7 @@ void DisplayText_idleMessage(void)
 void DisplayText_registerUserMessage(double goalAmount)
 {
     char goalMessage[CHARS_PER_LINE + 1];
-    snprintf(goalMessage, CHARS_PER_LINE, GOAL_TEMPLATE, goalAmount);
+    snprintf(goalMessage, CHARS_PER_LINE + 1, GOAL_TEMPLATE, goalAmount);
     goalMessage[CHARS_PER_LINE] = 0;
 
     LCDDisplay_writeLine(lcd, FIRST_LINE,  "     Welcome :)     ");
@@ -52,7 +55,7 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
                                          : "  Keep on drinking  ";
 
     char amountRemainingMessage[CHARS_PER_LINE + 1];
-    snprintf(amountRemainingMessage, CHARS_PER_LINE, REMAINING_TEMPLATE, amountRemaining);
+    snprintf(amountRemainingMessage, CHARS_PER_LINE + 1, REMAINING_TEMPLATE, amountRemaining);
     amountRemainingMessage[CHARS_PER_LINE] = 0;
 
     LCDDisplay_writeLine(lcd, FIRST_LINE,  "   Welcome Back :)  ");

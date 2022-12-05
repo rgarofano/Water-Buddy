@@ -12,6 +12,7 @@
 #include "swModules/User.h"
 #include "swModules/JSON.h"
 #include "swModules/HTTP.h"
+#include "swModules/DisplayText.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,7 +159,7 @@ static void* scheduleReminders(void* _arg)
 static void* waterDispenser(void* _arg)
 {
     while (true) {
-        // TODO: LCD welcome screen
+        DisplayText_idleMessage();
         printf("Welcome to WaterBuddy :)\n");
 
         uint64_t uid = 0;
@@ -260,7 +261,8 @@ static void init(void)
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
     // LCD init
-    LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
+    // LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
+    DisplayText_init();
 
     // Button/Switch Init
     Button_init(DISPENSE_BUTTON_PIN, DISPENSE_BUTTON_GPIO);
