@@ -12,13 +12,14 @@
 #define FOURTH_LINE 3
 
 #define CHARS_PER_LINE 20
+#define DISPENSED_AMOUNT_SIZE 8
 
 #define PROPORTION_OF_GOAL 0.2
 #define GOAL_THRESHOLD(goal, proportion) (proportion * goal)
 
 #define GOAL_TEMPLATE      "  Goal: %.1lf Liters  "
 #define REMAINING_TEMPLATE "%.1lf Liters Remaining"
-#define FILLING_TEMPLATE   "  Dispensed: %4d   "
+#define AMOUNT_TEMPLATE    "%4d   "
 
 static LCD* lcd;
 
@@ -35,7 +36,10 @@ static enum LAST_MESSAGE lastMessage = NO_MESSAGE;
 
 void DisplayText_init(void)
 {
-    lcd = LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
+    lcd = LCDDisplay_iLCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
+    LCDDisplay_writeLine(lcd, SECOND_LINE, "    Filling Up...   ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE,  "  Dispensed: ");
+    LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");nit(LCD_I2C_BUS, LCD_I2C_ADDR);
 }
 
 void DisplayText_idleMessage(void)
@@ -118,17 +122,18 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
 
 void DisplayText_fillingUpMessage(int currentVolumeML)
 {
-    char dispensedMessage[CHARS_PER_LINE + 1];
-    snprintf(dispensedMessage, CHARS_PER_LINE + 1, FILLING_TEMPLATE, currentVolumeML);
-    LCDDisplay_writeLine(lcd, THIRD_LINE,  dispensedMessage);
-
-    if (lastMessage == FILLING) {
-        return;
+    if (lastMessage != FILLING) {
+        LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
+        LCDDisplay_writeLine(lcd, SECOND_LINE, "    Filling Up...   ");
+        LCDDisplay_writeLine(lcd, THIRD_LINE,  "  Dispensed: ");
+        LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");
     }
 
-    LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
-    LCDDisplay_writeLine(lcd, SECOND_LINE, "    Filling Up...   ");
-    LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");
+    char amountDispensed[DISPENSED_AMOUNT_SIZE];
+    snprintf(amountDispensed, DISPENSED_AMOUNT_SIZE, AMOUNT_TEMPLATE, currentVolumeML);
+    amountDispensed[DISPENSED_AMOUNT_SIZE - 1] = 0;    
+
+    LCDDisplay_mvWrite(lcd, 14, THIRD_LINE, amountDispensed);
 
     lastMessage = FILLING;
 }
