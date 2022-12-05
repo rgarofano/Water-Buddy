@@ -53,12 +53,21 @@
             <div class="radio-button">
                 <input type="radio" id="one-min" name="frequency" value="0.0167">
                 <label for="one-min">every minute</label>
-                <span id="demo-tag">Demo Purposes Only</span>
+                <span id="demo-tag">Demo Only</span>
             </div>
         </div>
 
         <button>Save</button>
     </form>
+    <div class="wrapper">
+    <% for (let i = 0; i < 15; i++) { %>
+        <div class="bubble-wrapper">
+            <div class="bubble">
+            <div class="circle"></div>
+            </div>
+        </div>
+    <% } %>
+    </div>
 </body>
 
 </html>

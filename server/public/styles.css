@@ -3,14 +3,21 @@
 }
 
 body {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 0;
+    background: linear-gradient(180deg, #04bbfd 5%, #5bb6f7 50%, #39aafb);
+    overflow-y: hidden;
+    height: 98vh;
 }
 
 h1 {
     font-size: 3rem;
+    color: white;
+    text-shadow: 0 0 16px black;
 }
 
 #form-user-info {
@@ -22,6 +29,7 @@ h1 {
     box-shadow: 0 30px 60px -12px rgb(50 50 93 / 35%), 0 18px 36px -18px rgb(0 0 0 / 40%);
     border-radius: 2rem;
     font-size: 1.2rem;
+    background-color: white;
 }
 
 div.input-field {
@@ -63,7 +71,7 @@ div.radio-button {
     align-items: center;
     column-gap: 0.5rem;
     width: 20rem;
-    padding-left: 10rem;
+    padding-left: 20%; 
 }
 
 #radio-button-title {
@@ -80,4 +88,175 @@ button {
     background-color: cornflowerblue;
     color: white;
     cursor: pointer;
+}
+
+.wrapper {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.circle {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border: 1px solid white;
+    border-radius: 3rem;
+    top: 20%;
+    left: 20%;
+    background-color: rgba(255, 255, 255, 0.5); 
+}
+
+.bubble {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 1px solid white;
+    border-radius: 3rem;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.bubble-wrapper {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 20%;
+    left: 20%;
+    animation: animate 3s linear infinite;
+}
+
+.bubble-wrapper:nth-child(2) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 60%;
+    left: 80%;
+    animation: animate 4s linear infinite;
+}
+
+.bubble-wrapper:nth-child(3) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 40%;
+    left: 5%;
+    animation: animate 5s linear infinite;
+}
+
+.bubble-wrapper:nth-child(4) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 40%;
+    left: 90%;
+    animation: animate 6s linear infinite;
+}
+
+.bubble-wrapper:nth-child(5) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 75%;
+    left: 20%;
+    animation: animate 3s linear infinite;
+}
+
+.bubble-wrapper:nth-child(6) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 10%;
+    left: 85%;
+    animation: animate 4s linear infinite;
+}
+
+.bubble-wrapper:nth-child(7) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 80%;
+    left: 10%;
+    animation: animate 6s linear infinite;
+}
+
+.bubble-wrapper:nth-child(8) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 55%;
+    left: 23%;
+    animation: animate 5s linear infinite;
+}
+
+.bubble-wrapper:nth-child(9) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 80%;
+    left: 93%;
+    animation: animate 7s linear infinite;
+}
+
+.bubble-wrapper:nth-child(10) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 25%;
+    left: 73%;
+    animation: animate 7s linear infinite;
+}
+
+.bubble-wrapper:nth-child(11) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 10%;
+    left: 10%;
+    animation: animate 3s linear infinite;
+}
+
+.bubble-wrapper:nth-child(12) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 86%;
+    left: 75%;
+    animation: animate 5s linear infinite;
+}
+
+.bubble-wrapper:nth-child(13) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 90%;
+    left: 12%;
+    animation: animate 8s linear infinite;
+}
+
+.bubble-wrapper:nth-child(14) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 66%;
+    left: 8%;
+    animation: animate 4s linear infinite;
+}
+
+.bubble-wrapper:nth-child(15) {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 50%;
+    left: 70%;
+    animation: animate 5.5s linear infinite;
+}
+
+@keyframes animate {
+    0% {
+        transform: scale(0) translateY(0) rotate(70deg);
+    }
+
+    100% {
+        transform: scale(1.3) translateY(-100px) rotate(360deg);
+    }
 }
