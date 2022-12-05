@@ -25,7 +25,8 @@ enum LAST_MESSAGE {
     NO_MESSAGE = -1,
     IDLE = 0,
     REGISTER = 1,
-    EXISTING_USER = 2,
+    NEW_USER = 2,
+    EXISTING_USER = 3,
 };
 
 static enum LAST_MESSAGE lastMessage = NO_MESSAGE;
@@ -49,9 +50,25 @@ void DisplayText_idleMessage(void)
     lastMessage = IDLE;
 }
 
+void DisplayText_waitingForUserDataMessage(void)
+{   
+    if (lastMessage != REGISTER) {
+        LCDDisplay_writeLine(lcd, SECOND_LINE, "Registering New User");
+    }
+
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "                     ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       .             ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ..            ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ...           ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ....          ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       .....         ");
+
+    lastMessage = REGISTER;
+}
+
 void DisplayText_registerUserMessage(double goalAmount)
 {
-    if (lastMessage == REGISTER) {
+    if (lastMessage == NEW_USER) {
         return;
     }
 
@@ -64,7 +81,7 @@ void DisplayText_registerUserMessage(double goalAmount)
     LCDDisplay_writeLine(lcd, THIRD_LINE,  "   in your future   ");
     LCDDisplay_writeLine(lcd, FOURTH_LINE, goalMessage);
 
-    lastMessage = REGISTER;
+    lastMessage = NEW_USER;
 }
 
 void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRemaining)
