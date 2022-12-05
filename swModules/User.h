@@ -8,6 +8,7 @@ typedef struct {
     char* phoneNumber;
     double waterIntakeGoalLiters;
     double reminderFrequencyHours;
+    double lastReminderTimeHours;
 } user_t;
 
 #endif
