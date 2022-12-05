@@ -44,7 +44,7 @@ void DisplayText_idleMessage(void)
     LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
     LCDDisplay_writeLine(lcd, SECOND_LINE, "   Water Buddy :)   ");
     LCDDisplay_writeLine(lcd, THIRD_LINE,  "--------------------");
-    LCDDisplay_writeLine(lcd, FOURTH_LINE, "its time to drink up");
+    LCDDisplay_writeLine(lcd, FOURTH_LINE, "Its time to drink up");
 
     lastMessage = IDLE;
 }

@@ -183,10 +183,14 @@ static void* waterDispenser(void* _arg)
             }
 
             userIndex = numberUsers - 1;
+            DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLiters);
             printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
         else {
-            // TODO: LCD Welcome Existing User
+            DisplayText_welcomeExistingUserMessage(
+                userData[userIndex].waterIntakeGoalLiters,
+                userData[userIndex].waterIntakeGoalLiters - userData[userIndex].waterIntakeProgressLitres
+            );
             printf("Welcome existing user! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
 
@@ -194,7 +198,10 @@ static void* waterDispenser(void* _arg)
 
             // Wait for button Press
             if(!userIsNew) {
-                // TODO: LCD Welcome Existing User
+                DisplayText_welcomeExistingUserMessage(
+                    userData[userIndex].waterIntakeGoalLiters,
+                    userData[userIndex].waterIntakeGoalLiters - userData[userIndex].waterIntakeProgressLitres
+                );
             }
 
             printf("Start Filling\n");
