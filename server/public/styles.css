@@ -8,8 +8,10 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(180deg, #04fafd 5%, #5bb6f7 50%, #39aafb);
+    padding: 0;
+    background: linear-gradient(180deg, #04bbfd 5%, #5bb6f7 50%, #39aafb);
     overflow-y: hidden;
+    height: 98vh;
 }
 
 h1 {
@@ -69,7 +71,7 @@ div.radio-button {
     align-items: center;
     column-gap: 0.5rem;
     width: 20rem;
-    padding-left: 10rem;
+    padding-left: 20%; 
 }
 
 #radio-button-title {
@@ -92,7 +94,6 @@ button {
     position: fixed;
     width: 100%;
     height: 100%;
-    border: 2px solid red;
 }
 
 .circle {
