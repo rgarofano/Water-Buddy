@@ -219,6 +219,7 @@ static void* waterDispenser(void* _arg)
                 pthread_mutex_lock(&userRegisterMutex);
                 userRegistered = true;
                 pthread_mutex_unlock(&userRegisterMutex);
+                pthread_join(displayTid, NULL);
 
                 userIndex = numberUsers - 1;
                 DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLiters);
