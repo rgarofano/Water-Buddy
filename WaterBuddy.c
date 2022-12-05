@@ -141,7 +141,9 @@ static void* scheduleReminders(void* _arg)
         {
             for (int i = 0; i < numberUsers; i++) {
                 
-                if (userData[i].reminderFrequencyHours == 0) {
+                bool goalReached = userData[i].waterIntakeProgressLitres
+                                >= userData[i].waterIntakeGoalLiters;
+                if (userData[i].reminderFrequencyHours == 0 || goalReached) {
                     continue;
                 }
 

@@ -53,15 +53,17 @@ void DisplayText_idleMessage(void)
 void DisplayText_waitingForUserDataMessage(void)
 {   
     if (lastMessage != REGISTER) {
-        LCDDisplay_writeLine(lcd, SECOND_LINE, " Register New User ");
+        LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");
+        LCDDisplay_writeLine(lcd, SECOND_LINE, " Register New User  ");
+        LCDDisplay_writeLine(lcd, FOURTH_LINE, "--------------------");
     }
 
-    LCDDisplay_writeLine(lcd, THIRD_LINE, "                     ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE, "       .             ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ..            ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ...           ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ....          ");
-    LCDDisplay_writeLine(lcd, THIRD_LINE, "       .....         ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "                    ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       .            ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ..           ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ...          ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       ....         ");
+    LCDDisplay_writeLine(lcd, THIRD_LINE, "       .....        ");
 
     lastMessage = REGISTER;
 }
@@ -94,8 +96,11 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
     bool closeToGoal = 
         amountRemaining <= GOAL_THRESHOLD(goalAmount, PROPORTION_OF_GOAL);
     
+    bool goalReached = (amountRemaining == 0);
+
     char* thirdLineMessage = closeToGoal ? "  You're so close!  "
-                                         : "  Keep on drinking  ";
+                           : goalReached ? "Congrats you did it!" : "  Keep on drinking  ";
+
 
     char amountRemainingMessage[CHARS_PER_LINE + 1];
     snprintf(amountRemainingMessage, CHARS_PER_LINE + 1, REMAINING_TEMPLATE, amountRemaining);
