@@ -13,6 +13,7 @@
 
 #define CHARS_PER_LINE 20
 #define DISPENSED_AMOUNT_SIZE 8
+#define DISPENSED_AMOUNT_COLUMN 13
 
 #define PROPORTION_OF_GOAL 0.2
 #define GOAL_THRESHOLD(goal, proportion) (proportion * goal)
@@ -128,16 +129,16 @@ void DisplayText_fillingUpMessage(int currentVolumeML)
 
     char amountDispensed[DISPENSED_AMOUNT_SIZE];
     snprintf(amountDispensed, DISPENSED_AMOUNT_SIZE, AMOUNT_TEMPLATE, currentVolumeML);
-    amountDispensed[DISPENSED_AMOUNT_SIZE - 1] = 0;    
+    amountDispensed[DISPENSED_AMOUNT_SIZE - 1] = 0;
 
-    LCDDisplay_mvWrite(lcd, 14, THIRD_LINE, amountDispensed);
+    LCDDisplay_mvWrite(lcd, DISPENSED_AMOUNT_COLUMN, THIRD_LINE, amountDispensed);
 
     lastMessage = FILLING;
 }
 
-void DisplayText_postDispenseMessage(int amountRemaining)
+void DisplayText_postDispenseMessage(int amountRemainingML)
 {
-    bool goalReached = (amountRemaining == 0);
+    bool goalReached = (amountRemainingML == 0);
 
     if (goalReached) {
         LCDDisplay_writeLine(lcd, FIRST_LINE,  "--------------------");

@@ -142,7 +142,7 @@ static void* scheduleReminders(void* _arg)
             for (int i = 0; i < numberUsers; i++) {
                 
                 bool goalReached = userData[i].waterIntakeProgressLitres
-                                >= userData[i].waterIntakeGoalLiters;
+                                >= userData[i].waterIntakeGoalLitres;
                 if (userData[i].reminderFrequencyHours == 0 || goalReached) {
                     continue;
                 }
@@ -225,7 +225,7 @@ static void* waterDispenser(void* _arg)
                 pthread_join(displayTid, NULL);
 
                 userIndex = numberUsers - 1;
-                DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLiters);
+                DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLitres);
                 printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
             }
 
@@ -235,12 +235,15 @@ static void* waterDispenser(void* _arg)
         }
         else {
             DisplayText_welcomeExistingUserMessage(
-                userData[userIndex].waterIntakeGoalLiters,
-                userData[userIndex].waterIntakeGoalLiters - userData[userIndex].waterIntakeProgressLitres
+                userData[userIndex].waterIntakeGoalLitres,
+                userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres
             );
             printf("Welcome existing user! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
 
+        int totalDispensedWeightGrams = 0;
+
+        // While tagged container is present
         while(RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
 
             // Wait for button Press
@@ -260,30 +263,35 @@ static void* waterDispenser(void* _arg)
 
             while(Button_isPressed(DISPENSE_BUTTON_GPIO)) {
                 dispensedWeightGrams = Scale_getWeightGrams() - initialWeightGrams;
-                DisplayText_fillingUpMessage(dispensedWeightGrams);
-                printf("Filled: %d\n", dispensedWeightGrams);
+                DisplayText_fillingUpMessage(dispensedWeightGrams + totalDispensedWeightGrams);
+                printf("Filled: %d\n", dispensedWeightGrams + totalDispensedWeightGrams);
             }
-            
-            // Calculate the dispensed volume and update goal. Water's mass to volume conversion is about 1
-            double dispensedVolumeL = (double)dispensedWeightGrams / (double)ML_PER_L;
 
-            userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
-            if(userData[userIndex].waterIntakeProgressLitres > userData[userIndex].waterIntakeGoalLiters) {
-                userData[userIndex].waterIntakeGoalLiters = userData[userIndex].waterIntakeProgressLitres;
-                // TODO: LCD goal reached screen
-                printf("Goal Reached! %f / %f L\n",
-                    userData[userIndex].waterIntakeProgressLitres,
-                    userData[userIndex].waterIntakeGoalLiters
-                );
-            }
-            else {
-                // TODO: LCD display post dispense screen
-                printf("Goal Progress: %f / %f L\n",
-                    userData[userIndex].waterIntakeProgressLitres,
-                    userData[userIndex].waterIntakeGoalLiters
-                );
-            }
+            dispensedWeightGrams = (dispensedWeightGrams < 0) ? 0 : dispensedWeightGrams;
+
+            totalDispensedWeightGrams += dispensedWeightGrams;       
         }
+
+        // Calculate the dispensed volume
+        double dispensedVolumeL = (double)totalDispensedWeightGrams / (double)ML_PER_L;
+        userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
+        
+        // Calculate amount remaining
+        double amountRemainingL = userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres;
+        int amountRemainingML = (int)(amountRemainingL * ML_PER_L);
+
+        // Update goal progress
+        userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
+        if(amountRemainingL <= 0) {
+            userData[userIndex].waterIntakeProgressLitres = userData[userIndex].waterIntakeGoalLitres;
+        }
+
+        DisplayText_postDispenseMessage(amountRemainingML);
+
+        printf("Goal Progress %f / %f L\n",
+            userData[userIndex].waterIntakeProgressLitres,
+            userData[userIndex].waterIntakeGoalLitres
+        );
 
         userIsNew = false;
         sleepForMs(HARDWARE_CHECK_DELAY_MS);

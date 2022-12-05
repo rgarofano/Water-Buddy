@@ -75,7 +75,7 @@ bool JSON_getUserDataFromFile(char* filePath, user_t* userData)
 
     double waterIntake = 
         getDoubleFromJson(buffer, KEY_DAILY_INTAKE, NUM_CHARS_DAILY_INTAKE);
-    userData->waterIntakeGoalLiters = waterIntake;
+    userData->waterIntakeGoalLitres = waterIntake;
 
     double reminderFrequency = 
         getDoubleFromJson(buffer, KEY_REMINDER_FREQUENCY, NUM_CHARS_REMINDER_FREQUENCY);

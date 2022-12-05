@@ -13,4 +13,6 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
 
 void DisplayText_fillingUpMessage(int currentVolumeML);
 
+void DisplayText_postDispenseMessage(int amountRemaining);
+
 #endif
