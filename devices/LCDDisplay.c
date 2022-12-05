@@ -30,7 +30,7 @@
 #define LCD_ROW3 0xD4
 #define LCD_ENABLE_BIT 0x04
 
-#define DISPLAY_TOGGLE_SLEEP_TIME_US 300
+#define DISPLAY_TOGGLE_SLEEP_TIME_US 600
 
 struct lcd {
 	int fd;
