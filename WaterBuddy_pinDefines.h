@@ -20,7 +20,6 @@
 
 // LCD
 #define LCD_I2C_BUS 1
-#define LCD_I2C_ADDR 0x27
 
 // Button
 #define DISPENSE_BUTTON_PIN "p9_16"

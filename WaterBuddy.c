@@ -192,7 +192,9 @@ static void* updateRegisterUserDisplay(void* _arg)
 static void* waterDispenser(void* _arg)
 {
     while (true) {
+        printf("Welcome to WaterBuddy\n");
         DisplayText_idleMessage();
+
         uint64_t uid = 0;
         enum MFRC522_StatusCode status = RFIDReader_requestPiccAndGetUID(&uid);
 
@@ -262,13 +264,12 @@ static void* waterDispenser(void* _arg)
 
             while(Button_isPressed(DISPENSE_BUTTON_GPIO)) {
                 dispensedWeightGrams = Scale_getWeightGrams() - initialWeightGrams;
-                // TODO: LCD fill progress screen
+                DisplayText_fillingUpMessage(dispensedWeightGrams);
                 printf("Filled: %d\n", dispensedWeightGrams);
             }
             
             // Calculate the dispensed volume and update goal. Water's mass to volume conversion is about 1
-            int dispensedVolumeMl = dispensedWeightGrams;
-            double dispensedVolumeL = (double)dispensedVolumeMl / (double)ML_PER_L;
+            double dispensedVolumeL = (double)dispensedWeightGrams / (double)ML_PER_L;
 
             userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
             if(userData[userIndex].waterIntakeProgressLitres > userData[userIndex].waterIntakeGoalLiters) {
@@ -310,8 +311,7 @@ static void init(void)
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
     // LCD init
-    // LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
-    DisplayText_init();
+    DisplayText_init(LCD_I2C_BUS);
 
     // Button/Switch Init
     Button_init(DISPENSE_BUTTON_PIN, DISPENSE_BUTTON_GPIO);
