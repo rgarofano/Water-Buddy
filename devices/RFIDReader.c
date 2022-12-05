@@ -34,7 +34,6 @@ void RFIDReader_init(int init_spiBusNum, int init_spiChipSelect, char* init_rstP
 
     GPIO_configPin(rstPin, rstGpioNum, GPIO_OUT);
     GPIO_write(rstGpioNum, 0);
-    sleepForUs(2);
     GPIO_write(rstGpioNum, 1);
 
     spiFileDesc = SPI_initPort(
@@ -205,7 +204,12 @@ enum MFRC522_StatusCode RFIDReader_sendPiccCommand(enum MFRC522_PICC_Command pic
     return RFIDReader_transceive(&sendReq, 1, NULL, 0);
 }
 
-enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid)
+enum MFRC522_StatusCode RFIDReader_requestPicc(void)
+{
+    return RFIDReader_sendPiccCommand(PICC_REQA);
+}
+
+enum MFRC522_StatusCode RFIDReader_getActivePiccUID(uint64_t *uid)
 {
     if(!uid) {
         return STATUS_NO_ROOM;
@@ -237,16 +241,20 @@ enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid)
     free(sendBuf);
     free(recvBuf);
 
+    if(status == STATUS_OK && *uid == 0) {
+        status = STATUS_ERROR;
+    }
+
     return status;
 }
 
-enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid)
+enum MFRC522_StatusCode RFIDReader_requestPiccAndGetUID(uint64_t *uid)
 {
-    enum MFRC522_StatusCode status = RFIDReader_sendPiccCommand(PICC_REQA);
+    enum MFRC522_StatusCode status = RFIDReader_requestPicc();
     if(status != STATUS_OK) {
         return status;
     }
 
-    status = RFIDReader_selectPICCAndGetUID(uid);
+    status = RFIDReader_getActivePiccUID(uid);
     return status;
 }

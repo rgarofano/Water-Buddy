@@ -2,11 +2,12 @@
 #include "WaterBuddy.h"
 #include "WaterBuddy_pinDefines.h"
 
+#include "hwCommon/SystemTools.h"
+
 #include "devices/Scale.h"
 #include "devices/RFIDReader.h"
 #include "devices/Button.h"
-
-#include "hwCommon/SystemTools.h"
+#include "devices/LCDDisplay.h"
 
 #include "swModules/User.h"
 #include "swModules/JSON.h"
@@ -25,14 +26,18 @@
 #define SMS_ROUTE_LENGTH 15
 #define SMS_ROUTE_TEMPLATE "/sms/%s"
 
+#define ML_PER_L 1000
+
 /* Mutex */
 static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Thread IDs */
+/* Thread Variables */
 static pthread_t serverTid;
 static pthread_t waterDispenserTid;
 static pthread_t schedulerTid;
 static pthread_t sendReminderTid;
+
+#define SERVER_STARTUP_TIME_ESTIMATE_MS 10000
 
 /* User Data */
 static int numberUsers = 0;
@@ -55,7 +60,8 @@ static void doubleArraySize()
     userData = realloc(userData, maxNumberUsers * sizeof(*userData));
 }
 
-static void addUser(uint64_t uid)
+// Returns whether it was successful or not (true on successful, false on fail)
+static bool addUser(uint64_t uid)
 {
     // get up to date form data from server
     HTTP_sendGetRequest("/data");
@@ -65,7 +71,10 @@ static void addUser(uint64_t uid)
     newUser.lastReminderTimeHours = getTimeInHours();
     // parse formData.json to add the remaining
     // fileds to the struct
-    JSON_getUserDataFromFile("formData.json", &newUser);
+    bool status = JSON_getUserDataFromFile("formData.json", &newUser);
+    if(status == false) {
+        return false;
+    }
 
     pthread_mutex_lock(&userDataMutex);
     {
@@ -77,6 +86,8 @@ static void addUser(uint64_t uid)
         userData[numberUsers - 1] = newUser;
     }
     pthread_mutex_unlock(&userDataMutex);
+
+    return true;
 }
 
 static int getIndexOfUser(uint64_t targetUid)
@@ -100,6 +111,7 @@ static int getIndexOfUser(uint64_t targetUid)
 
 static void* startServer(void* _arg)
 {
+    printf("Starting Server...\n");
     system("sudo node server/app.js");
 
     pthread_exit(NULL);
@@ -146,26 +158,88 @@ static void* scheduleReminders(void* _arg)
 static void* waterDispenser(void* _arg)
 {
     while (true) {
+        // TODO: LCD welcome screen
+        printf("Welcome to WaterBuddy :)\n");
+
         uint64_t uid = 0;
-        enum MFRC522_StatusCode status = RFIDReader_getImmediateUID(&uid);
+        enum MFRC522_StatusCode status = RFIDReader_requestPiccAndGetUID(&uid);
         
-        if (status == STATUS_TIMEOUT) {
+        if (status != STATUS_OK) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
             continue;
         }
 
         int userIndex = getIndexOfUser(uid);
-        if (userIndex == USER_NOT_FOUND) {
-            addUser(uid);
+        bool userIsNew = (userIndex == USER_NOT_FOUND);
+
+        // Add user if uid not registered
+        if (userIsNew) {
+            printf("Attempt to create new user...\n");
+            bool status = addUser(uid);
+            if(status == false) {
+                printf("Create User Failed: No new user data\n");
+                continue;
+            }
+
             userIndex = numberUsers - 1;
+            printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
+        }
+        else {
+            // TODO: LCD Welcome Existing User
+            printf("Welcome existing user! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
 
-        printf("Waiting for button\n");
-        while (!Button_isPressed(BUTTON_GPIO_NUMBER)) {
-            sleepForMs(HARDWARE_CHECK_DELAY_MS);
+        while(RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
+
+            // Wait for button Press
+            if(!userIsNew) {
+                // TODO: LCD Welcome Existing User
+            }
+
+            printf("Start Filling\n");
+
+            while (!Button_isPressed(DISPENSE_BUTTON_GPIO) && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
+                sleepForMs(HARDWARE_CHECK_DELAY_MS);
+            }
+
+            if(RFIDReader_getActivePiccUID(&uid) != STATUS_OK) {
+                sleepForMs(HARDWARE_CHECK_DELAY_MS);
+                break;
+            }
+
+            int initialWeightGrams = Scale_getWeightGrams();
+            int dispensedWeightGrams = 0;
+
+            while(Button_isPressed(DISPENSE_BUTTON_GPIO)) {
+                dispensedWeightGrams = Scale_getWeightGrams() - initialWeightGrams;
+                // TODO: LCD fill progress screen
+                printf("Filled: %d\n", dispensedWeightGrams);
+            }
+            
+            // Calculate the dispensed volume and update goal. Water's mass to volume conversion is about 1
+            int dispensedVolumeMl = dispensedWeightGrams;
+            double dispensedVolumeL = (double)dispensedVolumeMl / (double)ML_PER_L;
+
+            userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
+            if(userData[userIndex].waterIntakeProgressLitres > userData[userIndex].waterIntakeGoalLiters) {
+                userData[userIndex].waterIntakeGoalLiters = userData[userIndex].waterIntakeProgressLitres;
+                // TODO: LCD goal reached screen
+                printf("Goal Reached! %f / %f L\n",
+                    userData[userIndex].waterIntakeProgressLitres,
+                    userData[userIndex].waterIntakeGoalLiters
+                );
+            }
+            else {
+                // TODO: LCD display post dispense screen
+                printf("Goal Progress: %f / %f L\n",
+                    userData[userIndex].waterIntakeProgressLitres,
+                    userData[userIndex].waterIntakeGoalLiters
+                );
+            }
         }
 
-        // scale stuff goes here
+        userIsNew = false;
+        sleepForMs(HARDWARE_CHECK_DELAY_MS);
     }
 
     pthread_exit(NULL);
@@ -185,12 +259,15 @@ static void init(void)
 
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
-    // TODO: LCD init
+    // LCD init
+    LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
 
-    Button_init(BUTTON_GPIO_PIN, BUTTON_GPIO_NUMBER);
+    // Button/Switch Init
+    Button_init(DISPENSE_BUTTON_PIN, DISPENSE_BUTTON_GPIO);
 
     // SW module initialization
     pthread_create(&serverTid, NULL, startServer, NULL);
+    sleepForMs(SERVER_STARTUP_TIME_ESTIMATE_MS);
     pthread_create(&waterDispenserTid, NULL, waterDispenser, NULL);
     pthread_create(&schedulerTid, NULL, scheduleReminders, NULL);
 

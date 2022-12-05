@@ -46,6 +46,8 @@ static void LCDDisplay_toggle(int fd, uint8_t val)
 
 LCD *LCDDisplay_init(int bus, int addr)
 {
+	I2C_initBus(bus, addr);
+	
 	/* create lcd and associate with i2c device */
 	LCD *lcd = malloc(sizeof(LCD));
 	lcd->bl = LCD_BACKLIGHT;
