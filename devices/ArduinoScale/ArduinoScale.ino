@@ -35,6 +35,7 @@
 #define TARE_ON_START true
 
 #define CALIBRATION_FACTOR_GRAMS -380.0f // Experimentally found
+#define NUM_SAMPLES_IN_USE 4
 
 #define SERIAL_BAUD_RATE 57600
 
@@ -47,6 +48,9 @@ void setup()
   Serial.begin(SERIAL_BAUD_RATE);
   Serial.println("Starting...");
 
+  pinMode(HX711_DOUT_PIN, INPUT);
+  pinMode(HX711_SCK_PIN, OUTPUT);
+
   pinMode(BBG_REQ_PIN, INPUT);
   pinMode(BBG_ACK_PIN, OUTPUT);
   pinMode(BBG_CLK_PIN, INPUT);
@@ -56,6 +60,7 @@ void setup()
   digitalWrite(BBG_DATA_PIN, LOW);
 
   LoadCell.begin();
+  LoadCell.setSamplesInUse(NUM_SAMPLES_IN_USE);
   LoadCell.start(STABILIZING_TIME_MS, TARE_ON_START);
   if (LoadCell.getTareTimeoutFlag() || LoadCell.getSignalTimeoutFlag()) {
     Serial.println("Timeout, check MCU>HX711 wiring and pin designations");

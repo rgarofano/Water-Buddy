@@ -82,7 +82,8 @@ uint8_t I2C_readReg(int i2cFileDesc, uint8_t addr)
   purposes taken from a pre-existing library
   
   Source: https://github.com/Ckath/lcd2004_i2c*/
-void I2C_write(int fd, uint8_t b)
+void I2C_write(int i2cFileDesc, uint8_t byte)
 {
-	write(fd, &b, 1);
+    const int NUM_BYTES = 1;
+	write(i2cFileDesc, &byte, NUM_BYTES);
 }
