@@ -32,7 +32,7 @@ static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t serverTid;
 static pthread_t waterDispenserTid;
 static pthread_t schedulerTid;
-static pthread_t sendTextTid;
+static pthread_t sendReminderTid;
 
 /* User Data */
 static int numberUsers = 0;
@@ -128,7 +128,7 @@ static void* scheduleReminders(void* _arg)
                     userData[i].reminderFrequencyHours;       
                 
                 if (timeSinceLastReminder >= timeBetweenReminders) {
-                    pthread_create(&sendTextTid, NULL, sendTextMessage, userData[i].phoneNumber);
+                    pthread_create(&sendReminderTid, NULL, sendReminder, userData[i].phoneNumber);
                     userData[i].lastReminderTimeHours = getTimeInHours();
                 }
             }
