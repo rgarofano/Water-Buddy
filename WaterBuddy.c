@@ -73,26 +73,29 @@ static void addUser(uint64_t uid)
         if (numberUsers == maxNumberUsers) {
             doubleArraySize();
         }
+
+        userData[numberUsers - 1] = newUser;
     }
     pthread_mutex_unlock(&userDataMutex);
-
-    userData[numberUsers - 1] = newUser;
 }
 
 static int getIndexOfUser(uint64_t targetUid)
 {
+    int index = USER_NOT_FOUND;
+
     pthread_mutex_lock(&userDataMutex);
     {
         for (int i = 0; i < numberUsers; i++) {
             user_t user = userData[i];
             if (user.uid == targetUid) {
-                return i;
+                index = i;
+                break;
             }
         }
     }
     pthread_mutex_unlock(&userDataMutex);
 
-    return USER_NOT_FOUND;
+    return index;
 }
 
 static void* startServer(void* _arg)
