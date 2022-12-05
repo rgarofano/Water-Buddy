@@ -10,3 +10,4 @@ tests/Scale_test
 tests/spidev_test
 tests/RFIDReader_test
 tests/LCD_test
+tests/Button_test

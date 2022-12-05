@@ -25,5 +25,9 @@ LCD_test: clean
 	$(CC) $(CFLAGS) LCD_test.c ../devices/LCDDisplay.c $(HW_COMMON) -o LCD_test
 	cp LCD_test $(HOME)/cmpt433/public/myApps/
 
+Button_test: clean
+	$(CC) $(CFLAGS) Button_test.c ../devices/Button.c $(HW_COMMON) -o Button_test
+	cp Button_test $(HOME)/cmpt433/public/myApps/
+
 clean:
 	rm -f spidev_test RFIDReader_test LCD_test Scale_test
