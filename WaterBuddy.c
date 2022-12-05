@@ -62,7 +62,7 @@ static void addUser(uint64_t uid)
     
     user_t newUser;
     newUser.uid = uid;
-    newUser.lastReminderTimeHours = 0;
+    newUser.lastReminderTimeHours = getTimeInHours();
     // parse formData.json to add the remaining
     // fileds to the struct
     JSON_getUserDataFromFile("formData.json", &newUser);
@@ -114,9 +114,7 @@ static void* sendTextMessage(void* phoneNumber)
 
 static void* sendReminders(void* _arg)
 {
-    double timeElapsedHours = 0;
     while (true) {
-        double startTimeHours = getTimeInHours();
         pthread_mutex_lock(&userDataMutex);
         {
             for (int i = 0; i < numberUsers; i++) {
@@ -124,7 +122,7 @@ static void* sendReminders(void* _arg)
                     userData[i].lastReminderTimeHours;
 
                 double timeSinceLastReminder =
-                    timeElapsedHours - lastReminderTime;
+                    getTimeInHours() - lastReminderTime;
 
                 double timeBetweenReminders = 
                     userData[i].reminderFrequencyHours;       
@@ -138,7 +136,6 @@ static void* sendReminders(void* _arg)
         pthread_mutex_unlock(&userDataMutex);
 
         sleepForMs(REMINDER_CHECK_DELAY_MS);
-        timeElapsedHours += getTimeInHours() - startTimeHours;
     }
     pthread_exit(NULL);
 }
