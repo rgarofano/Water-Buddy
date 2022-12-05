@@ -7,6 +7,7 @@
 #include "devices/Scale.h"
 #include "devices/RFIDReader.h"
 #include "devices/Button.h"
+#include "devices/LCDDisplay.h"
 
 #include "swModules/User.h"
 #include "swModules/JSON.h"
@@ -119,7 +120,7 @@ static void* waterDispenser(void* _arg)
         }
 
         printf("Waiting for button\n");
-        while (!Button_isPressed(BUTTON_GPIO_NUMBER)) {
+        while (!Button_isPressed(DISPENSE_BUTTON_GPIO)) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
         }
 
@@ -143,9 +144,11 @@ static void init(void)
 
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
-    // TODO: LCD init
+    // LCD init
+    LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
 
-    Button_init(BUTTON_GPIO_PIN, BUTTON_GPIO_NUMBER);
+    // Button/Switch Init
+    Button_init(DISPENSE_BUTTON_PIN, DISPENSE_BUTTON_GPIO);
 
     // SW module initialization
     pthread_create(&serverTid, NULL, startServer, NULL);
