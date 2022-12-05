@@ -158,13 +158,13 @@ static void* scheduleReminders(void* _arg)
 static void* waterDispenser(void* _arg)
 {
     while (true) {
-        uint64_t uid = 0;
-        enum MFRC522_StatusCode status = RFIDReader_getImmediateUID(&uid);
-        
-        if (status == STATUS_TIMEOUT) {
-            // TODO: LCD welcome screen
-            printf("Welcome to WaterBuddy :)\n");
+        // TODO: LCD welcome screen
+        printf("Welcome to WaterBuddy :)\n");
 
+        uint64_t uid = 0;
+        enum MFRC522_StatusCode status = RFIDReader_requestPiccAndGetUID(&uid);
+        
+        if (status != STATUS_OK) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
             continue;
         }
@@ -189,7 +189,7 @@ static void* waterDispenser(void* _arg)
             printf("Welcome existing user! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
 
-        while(RFIDReader_getImmediateUID(&uid)) {
+        while(RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
 
             // Wait for button Press
             if(!userIsNew) {
@@ -198,14 +198,14 @@ static void* waterDispenser(void* _arg)
 
             printf("Start Filling\n");
 
-            while (!Button_isPressed(DISPENSE_BUTTON_GPIO)) {
+            while (!Button_isPressed(DISPENSE_BUTTON_GPIO) && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
                 sleepForMs(HARDWARE_CHECK_DELAY_MS);
             }
 
-            // if(!RFIDReader_getImmediateUID(&uid)) {
-            //     sleepForMs(HARDWARE_CHECK_DELAY_MS);
-            //     break;
-            // }
+            if(RFIDReader_getActivePiccUID(&uid) != STATUS_OK) {
+                sleepForMs(HARDWARE_CHECK_DELAY_MS);
+                break;
+            }
 
             int initialWeightGrams = Scale_getWeightGrams();
             int dispensedWeightGrams = 0;

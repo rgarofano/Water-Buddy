@@ -65,14 +65,18 @@ enum MFRC522_StatusCode RFIDReader_transceive(uint8_t *sendBuffer, uint8_t sendS
 // Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
 enum MFRC522_StatusCode RFIDReader_sendPiccCommand(enum MFRC522_PICC_Command piccCommand);
 
-// Gets the UID of a PICC in the vicinity and stores it in uid
-// A Wakeup or Request PICC Command must be sent first
+// Transmits a Request command to PICCs in the vicinity
 // Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
-enum MFRC522_StatusCode RFIDReader_selectPICCAndGetUID(uint64_t *uid);
+enum MFRC522_StatusCode RFIDReader_requestPicc(void);
+
+// Gets the UID of an active PICC in the vicinity and stores it in uid
+// A Wakeup or Request PICC Command MUST succeed first. Otherwise, the returned UID will be garbage
+// Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
+enum MFRC522_StatusCode RFIDReader_getActivePiccUID(uint64_t *uid);
 
 // Sends Request PICC command first, then gets the UID of the PICC in the vicinity and stores it in uid
 // Returns STATUS_OK on success and STATUS_TIMEOUT if no PICC in the vicinity
-enum MFRC522_StatusCode RFIDReader_getImmediateUID(uint64_t *uid);
+enum MFRC522_StatusCode RFIDReader_requestPiccAndGetUID(uint64_t *uid);
 
 bool RFIDReader_isTagPresent(void);
 

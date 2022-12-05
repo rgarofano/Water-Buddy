@@ -68,7 +68,7 @@ static void testRequestUID(void)
         printf("Error: PICC Request Failed\n");
     }
 
-    status = RFIDReader_selectPICCAndGetUID(&uid);
+    status = RFIDReader_getActivePiccUID(&uid);
     if(status < 0) {
         printf("Error: Get UID Failed\n");
     }
@@ -78,7 +78,7 @@ static void testRequestUID(void)
     check(status == STATUS_OK);
 }
 
-static void testGetImmediateUID(void)
+static void testRequestPiccAndGetUID(void)
 {
     printf("\ntestGetImmediateUID\n");
 
@@ -86,7 +86,7 @@ static void testGetImmediateUID(void)
 
     uint64_t uid = 0;
 
-    int status = RFIDReader_getImmediateUID(&uid);
+    int status = RFIDReader_requestPiccAndGetUID(&uid);
     if(status < 0) {
         printf("Error: status %d\n", status);
     }
@@ -96,16 +96,40 @@ static void testGetImmediateUID(void)
     check(status == STATUS_OK);
 }
 
+static void testLoopGetUID(void)
+{
+    printf("\testLoopGetImmediateUID\n");
+
+    RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
+
+    uint64_t uid = 0;
+
+    int status = RFIDReader_requestPiccAndGetUID(&uid);
+    if(status < 0) {
+        printf("Error: status %d\n", status);
+    }
+    printf("UID: %llx\n", uid);
+
+    for(int i = 0; i < 500; i++) {
+        status = RFIDReader_getActivePiccUID(&uid);
+        if(status < 0) {
+            printf("Error: status %d\n", status);
+        }
+        printf("UID: %llx\n", uid);
+    }
+}
+
 static void runTestSuite(void)
 {
     printf("RFIDReader Test Suite\n");
 
-    #define NUM_TESTS 3
+    #define NUM_TESTS 4
     void (*testFunctions[NUM_TESTS])(void);
 
     testFunctions[0] = testFIFO;
     testFunctions[1] = testRequestUID;
-    testFunctions[2] = testGetImmediateUID;
+    testFunctions[2] = testRequestPiccAndGetUID;
+    testFunctions[3] = testLoopGetUID;
 
     for(int i = 0; i < NUM_TESTS; i++) {
         sleepForMs(100);
