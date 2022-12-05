@@ -140,6 +140,11 @@ static void* scheduleReminders(void* _arg)
         pthread_mutex_lock(&userDataMutex);
         {
             for (int i = 0; i < numberUsers; i++) {
+                
+                if (userData[i].reminderFrequencyHours == 0) {
+                    continue;
+                }
+
                 double lastReminderTime = 
                     userData[i].lastReminderTimeHours;
 
@@ -165,11 +170,14 @@ static void* scheduleReminders(void* _arg)
 static void* updateRegisterUserDisplay(void* _arg)
 {
     while (true) {
+        bool doneRegistering = false;
         pthread_mutex_lock(&userRegisterMutex);
-        if (userRegistered == true) {
+        doneRegistering = userRegistered;
+        pthread_mutex_unlock(&userRegisterMutex);
+
+        if (doneRegistering) {
             break;
         }
-        pthread_mutex_unlock(&userRegisterMutex);
 
         DisplayText_waitingForUserDataMessage();
         sleepForMs(LCD_WRITE_DELAY_MS);
