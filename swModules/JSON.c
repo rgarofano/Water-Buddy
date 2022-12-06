@@ -64,6 +64,7 @@ bool JSON_getUserDataFromFile(char* filePath, user_t* userData)
 
     // Clear existing user data
     pFile = fopenWithCheck(filePath, "w");
+    fprintf(pFile, "0");
     fclose(pFile);
     
     char* phoneNumber = 

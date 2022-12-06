@@ -144,7 +144,6 @@ static void* scheduleReminders(void* _arg)
                 
                 bool goalReached = userData[i].waterIntakeProgressLitres
                                 >= userData[i].waterIntakeGoalLitres;
-                printf("freq: %lf, goal reached: %d\n", userData[i].reminderFrequencyHours, goalReached);
                 if (userData[i].reminderFrequencyHours == 0 || goalReached) {
                     continue;
                 }
