@@ -13,7 +13,7 @@
 #define KEY_DAILY_INTAKE "goal"
 #define NUM_CHARS_PHONE_NUMBER 10
 #define NUM_CHARS_DAILY_INTAKE 3
-#define NUM_CHARS_REMINDER_FREQUENCY 3
+#define NUM_CHARS_REMINDER_FREQUENCY 5
 
 static char* parseValueFromKey(char* json, char* key, int size)
 {

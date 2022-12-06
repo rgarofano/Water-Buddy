@@ -24,7 +24,7 @@
 #define USER_NOT_FOUND -1
 
 #define HARDWARE_CHECK_DELAY_MS 100
-#define REMINDER_CHECK_DELAY_MS 60000
+#define REMINDER_CHECK_DELAY_MS 30000
 #define LCD_WRITE_DELAY_MS 200
 #define POST_DISPENSE_MESSAGE_DELAY_MS 5000
 
@@ -129,7 +129,7 @@ static void* sendReminder(void* phoneNumber)
 {
     char* phone = (char*)phoneNumber;
     char buffer[SMS_ROUTE_LENGTH + 1];
-    snprintf(buffer, SMS_ROUTE_LENGTH, SMS_ROUTE_TEMPLATE, phone);
+    snprintf(buffer, SMS_ROUTE_LENGTH + 1, SMS_ROUTE_TEMPLATE, phone);
     buffer[SMS_ROUTE_LENGTH] = 0;
     HTTP_sendPostRequest(buffer);
     pthread_exit(NULL);
@@ -144,6 +144,7 @@ static void* scheduleReminders(void* _arg)
                 
                 bool goalReached = userData[i].waterIntakeProgressLitres
                                 >= userData[i].waterIntakeGoalLitres;
+                printf("freq: %lf, goal reached: %d\n", userData[i].reminderFrequencyHours, goalReached);
                 if (userData[i].reminderFrequencyHours == 0 || goalReached) {
                     continue;
                 }
@@ -158,6 +159,7 @@ static void* scheduleReminders(void* _arg)
                     userData[i].reminderFrequencyHours;       
                 
                 if (timeSinceLastReminder >= timeBetweenReminders) {
+                    printf("sending text message/n");
                     pthread_create(&sendReminderTid, NULL, sendReminder, userData[i].phoneNumber);
                     userData[i].lastReminderTimeHours = getTimeInHours();
                 }
@@ -269,8 +271,6 @@ static void* waterDispenser(void* _arg)
             dispensedWeightGrams = (dispensedWeightGrams < 0) ? 0 : dispensedWeightGrams;
 
             totalDispensedWeightGrams += dispensedWeightGrams;
-            printf("dispensed: %d\n", dispensedWeightGrams);
-            printf("Total weight: %d\n", totalDispensedWeightGrams);
         }
 
         if(totalDispensedWeightGrams == 0) {
@@ -279,16 +279,21 @@ static void* waterDispenser(void* _arg)
 
         // Calculate the dispensed volume
         double dispensedVolumeL = (double)totalDispensedWeightGrams / (double)ML_PER_L;
-        
-        // Calculate amount remaining
-        double amountRemainingL = userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres;
-        int amountRemainingML = (int)(amountRemainingL * ML_PER_L);
 
         // Update goal progress
         userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
+
+        double amountRemainingL = userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres;
+
         if(amountRemainingL <= 0) {
             userData[userIndex].waterIntakeProgressLitres = userData[userIndex].waterIntakeGoalLitres;
         }
+        
+        // Correct amount remaining
+        amountRemainingL = (amountRemainingL < 0) ? 0 : amountRemainingL;
+        int amountRemainingML = (int)(amountRemainingL * ML_PER_L);
+
+        printf("amount remaining: %d\n", amountRemainingML);
 
         DisplayText_postDispenseMessage(amountRemainingML);
 

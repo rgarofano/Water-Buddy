@@ -26,7 +26,7 @@ app.post('/sms/:phone', (req, res) => {
         console.log("Error, invalid phone number");
     }
     require('dotenv').config();
-    const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_TOKEN);
+    const client = require('twilio')('ACcd57d4cf7692740919b364e94e74876f', 'API key goes here');
     client.messages
         .create({
             body: 'This is your water buddy here to remind you that it\'s time to drink up!',

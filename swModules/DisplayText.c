@@ -131,7 +131,7 @@ void DisplayText_registerUserMessage(double goalAmount)
     goalMessage[CHARS_PER_LINE] = 0;
 
     LCDDisplay_writeLine(lcd, FIRST_LINE,  "     Welcome :)     ");
-    LCDDisplay_writeLine(lcd, SECOND_LINE, " I see hydration in ");
+    LCDDisplay_writeLine(lcd, SECOND_LINE, "  I see hydration   ");
     LCDDisplay_writeLine(lcd, THIRD_LINE,  "   in your future   ");
     LCDDisplay_writeLine(lcd, FOURTH_LINE, goalMessage);
 
@@ -148,10 +148,11 @@ void DisplayText_welcomeExistingUserMessage(double goalAmount, double amountRema
     bool closeToGoal = 
         amountRemaining <= GOAL_THRESHOLD(goalAmount, PROPORTION_OF_GOAL);
     
-    bool goalReached = (amountRemaining == 0);
+    bool goalReached = ((int)(amountRemaining * 100.0) == 0);
 
-    char* thirdLineMessage = closeToGoal ? "  You're so close!  "
-                           : goalReached ? "Congrats you did it!" : "  Keep on drinking  ";
+    char* thirdLineMessage =    goalReached ? "Congrats you did it!" :
+                                closeToGoal ? "  You're so close!  " :
+                                "  Keep on drinking  ";
 
 
     char amountRemainingMessage[CHARS_PER_LINE + 1];

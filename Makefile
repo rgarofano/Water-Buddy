@@ -22,7 +22,7 @@ $(TARGET): clean
 	mkdir -p $(PUBDIR)/server/
 	cp -R server/* $(PUBDIR)/server/
 	cp formData.json $(PUBDIR)/
-#	cp server/.env $(PUBDIR)/server/
+	cp server/.env $(PUBDIR)/server/
 	
 
 # Clean Target
