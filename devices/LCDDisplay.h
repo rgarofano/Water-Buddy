@@ -1,3 +1,6 @@
+/* Code sourced from https://github.com/Ckath/lcd2004_i2c 
+   Modified by Rajnesh Joshi to add easier to use functions */
+
 #ifndef LCD_DISPLAY_
 #define LCD_DISPLAY_
 #include <stdint.h>
