@@ -26,7 +26,7 @@ app.post('/sms/:phone', (req, res) => {
         console.log("Error, invalid phone number");
     }
     require('dotenv').config();
-    const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_TOKEN);
+    const client = require('twilio')('ACcd57d4cf7692740919b364e94e74876f', '6c1f2b4863abf0c7684fc126a8fdf26b');
     client.messages
         .create({
             body: 'This is your water buddy here to remind you that it\'s time to drink up!',
@@ -52,6 +52,7 @@ app.get('/data', (req, res) => {
             throw error;
         }
     });
+    formData = undefined;
     res.send('data has been uploaded to formData.json');
 });
 

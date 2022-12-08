@@ -5,6 +5,8 @@
 #define LCD_DISPLAY_
 #include <stdint.h>
 
+#define LCD_I2C_ADDR 0x27
+
 /* general commands */
 #define LCD_CLEARDISPLAY 0x01
 #define LCD_CURSORSHIFT 0x10
@@ -46,14 +48,15 @@
 
 typedef struct lcd LCD;
 
-LCD *LCDDisplay_init(int bus, int addr);
+LCD *LCDDisplay_init(int bus);
 void LCDDisplay_delete(LCD *lcd);
-void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode); /* <- not meant for direct calling */
 void LCDDisplay_backlight(LCD *lcd, uint8_t on);
 void LCDDisplay_move(LCD *lcd, int x, int y);
 void LCDDisplay_write(LCD *lcd, char *data);
 
 void LCDDisplay_writeLine(LCD * lcd, int line, char* data);
+
+void LCDDisplay_sendByte(LCD *lcd, uint8_t val, uint8_t mode);
 
 /* convenient wrapper macros */
 #define LCDDisplay_mvWrite(lcd, x, y, data) do { LCDDisplay_move(lcd, x, y); LCDDisplay_write(lcd, data); } while (0)

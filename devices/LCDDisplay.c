@@ -30,6 +30,8 @@
 #define LCD_ROW3 0xD4
 #define LCD_ENABLE_BIT 0x04
 
+#define DISPLAY_TOGGLE_SLEEP_TIME_US 600
+
 struct lcd {
 	int fd;
 	uint8_t bl;
@@ -37,16 +39,15 @@ struct lcd {
 
 static void LCDDisplay_toggle(int fd, uint8_t val)
 {
-	sleepForMs(10);
+	sleepForUs(DISPLAY_TOGGLE_SLEEP_TIME_US);
 	I2C_write(fd, val | LCD_ENABLE_BIT);
-	sleepForMs(10);
+	sleepForUs(DISPLAY_TOGGLE_SLEEP_TIME_US);
 	I2C_write(fd, val & ~LCD_ENABLE_BIT);
-	sleepForMs(10);
 }
 
-LCD *LCDDisplay_init(int bus, int addr)
+LCD *LCDDisplay_init(int bus)
 {
-	I2C_initBus(bus, addr);
+	I2C_initBus(bus, LCD_I2C_ADDR);
 	
 	/* create lcd and associate with i2c device */
 	LCD *lcd = malloc(sizeof(LCD));
@@ -56,7 +57,7 @@ LCD *LCDDisplay_init(int bus, int addr)
 	if ((lcd->fd = open(dev, O_RDWR)) < 0) {
 		free(lcd);
 		return NULL;
-	} if (ioctl(lcd->fd, I2C_SLAVE, addr) < 0) { 
+	} if (ioctl(lcd->fd, I2C_SLAVE, LCD_I2C_ADDR) < 0) { 
 		LCDDisplay_delete(lcd);
 		return NULL;
 	}

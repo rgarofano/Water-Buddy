@@ -13,7 +13,7 @@
 #define KEY_DAILY_INTAKE "goal"
 #define NUM_CHARS_PHONE_NUMBER 10
 #define NUM_CHARS_DAILY_INTAKE 3
-#define NUM_CHARS_REMINDER_FREQUENCY 3
+#define NUM_CHARS_REMINDER_FREQUENCY 5
 
 static char* parseValueFromKey(char* json, char* key, int size)
 {
@@ -64,6 +64,7 @@ bool JSON_getUserDataFromFile(char* filePath, user_t* userData)
 
     // Clear existing user data
     pFile = fopenWithCheck(filePath, "w");
+    fprintf(pFile, "0");
     fclose(pFile);
     
     char* phoneNumber = 
@@ -75,7 +76,7 @@ bool JSON_getUserDataFromFile(char* filePath, user_t* userData)
 
     double waterIntake = 
         getDoubleFromJson(buffer, KEY_DAILY_INTAKE, NUM_CHARS_DAILY_INTAKE);
-    userData->waterIntakeGoalLiters = waterIntake;
+    userData->waterIntakeGoalLitres = waterIntake;
 
     double reminderFrequency = 
         getDoubleFromJson(buffer, KEY_REMINDER_FREQUENCY, NUM_CHARS_REMINDER_FREQUENCY);

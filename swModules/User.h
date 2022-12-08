@@ -6,7 +6,7 @@
 typedef struct {
     uint64_t uid;
     char* phoneNumber;
-    double waterIntakeGoalLiters;
+    double waterIntakeGoalLitres;
     double waterIntakeProgressLitres;
     double reminderFrequencyHours;
     double lastReminderTimeHours;

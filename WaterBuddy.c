@@ -12,6 +12,7 @@
 #include "swModules/User.h"
 #include "swModules/JSON.h"
 #include "swModules/HTTP.h"
+#include "swModules/DisplayText.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,22 +21,28 @@
 #include <pthread.h>
 
 #define INIT_ARRAY_SIZE 4
-#define HARDWARE_CHECK_DELAY_MS 100
 #define USER_NOT_FOUND -1
-#define REMINDER_CHECK_DELAY_MS 60000
+
+#define HARDWARE_CHECK_DELAY_MS 100
+#define REMINDER_CHECK_DELAY_MS 30000
+#define LCD_WRITE_DELAY_MS 200
+#define POST_DISPENSE_MESSAGE_DELAY_MS 5000
+
 #define SMS_ROUTE_LENGTH 15
 #define SMS_ROUTE_TEMPLATE "/sms/%s"
 
 #define ML_PER_L 1000
 
-/* Mutex */
+/* Mutex Variables */
 static pthread_mutex_t userDataMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t userRegisterMutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Thread Variables */
+/* Thread IDs */
 static pthread_t serverTid;
 static pthread_t waterDispenserTid;
 static pthread_t schedulerTid;
 static pthread_t sendReminderTid;
+static pthread_t displayTid;
 
 #define SERVER_STARTUP_TIME_ESTIMATE_MS 10000
 
@@ -43,6 +50,7 @@ static pthread_t sendReminderTid;
 static int numberUsers = 0;
 static int maxNumberUsers;
 static user_t* userData;
+static bool userRegistered = false;
 
 static void initializeUserArray() 
 {
@@ -121,7 +129,7 @@ static void* sendReminder(void* phoneNumber)
 {
     char* phone = (char*)phoneNumber;
     char buffer[SMS_ROUTE_LENGTH + 1];
-    snprintf(buffer, SMS_ROUTE_LENGTH, SMS_ROUTE_TEMPLATE, phone);
+    snprintf(buffer, SMS_ROUTE_LENGTH + 1, SMS_ROUTE_TEMPLATE, phone);
     buffer[SMS_ROUTE_LENGTH] = 0;
     HTTP_sendPostRequest(buffer);
     pthread_exit(NULL);
@@ -133,6 +141,13 @@ static void* scheduleReminders(void* _arg)
         pthread_mutex_lock(&userDataMutex);
         {
             for (int i = 0; i < numberUsers; i++) {
+                
+                bool goalReached = userData[i].waterIntakeProgressLitres
+                                >= userData[i].waterIntakeGoalLitres;
+                if (userData[i].reminderFrequencyHours == 0 || goalReached) {
+                    continue;
+                }
+
                 double lastReminderTime = 
                     userData[i].lastReminderTimeHours;
 
@@ -143,6 +158,7 @@ static void* scheduleReminders(void* _arg)
                     userData[i].reminderFrequencyHours;       
                 
                 if (timeSinceLastReminder >= timeBetweenReminders) {
+                    printf("sending text message/n");
                     pthread_create(&sendReminderTid, NULL, sendReminder, userData[i].phoneNumber);
                     userData[i].lastReminderTimeHours = getTimeInHours();
                 }
@@ -155,15 +171,34 @@ static void* scheduleReminders(void* _arg)
     pthread_exit(NULL);
 }
 
+static void* updateRegisterUserDisplay(void* _arg)
+{
+    while (true) {
+        bool doneRegistering = false;
+        pthread_mutex_lock(&userRegisterMutex);
+        doneRegistering = userRegistered;
+        pthread_mutex_unlock(&userRegisterMutex);
+
+        if (doneRegistering) {
+            break;
+        }
+
+        DisplayText_waitingForUserDataMessage();
+        sleepForMs(LCD_WRITE_DELAY_MS);
+    }
+
+    userRegistered = false;
+    pthread_exit(NULL);
+}
+
 static void* waterDispenser(void* _arg)
 {
     while (true) {
-        // TODO: LCD welcome screen
-        printf("Welcome to WaterBuddy :)\n");
+        DisplayText_idleMessage();
 
         uint64_t uid = 0;
         enum MFRC522_StatusCode status = RFIDReader_requestPiccAndGetUID(&uid);
-        
+
         if (status != STATUS_OK) {
             sleepForMs(HARDWARE_CHECK_DELAY_MS);
             continue;
@@ -175,27 +210,44 @@ static void* waterDispenser(void* _arg)
         // Add user if uid not registered
         if (userIsNew) {
             printf("Attempt to create new user...\n");
-            bool status = addUser(uid);
-            if(status == false) {
-                printf("Create User Failed: No new user data\n");
-                continue;
+            pthread_create(&displayTid, NULL, updateRegisterUserDisplay, NULL);
+            bool addUserStatus = false;
+            while (!addUserStatus && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
+                
+                addUserStatus = addUser(uid);
+
+                if(addUserStatus == false) {
+                    printf("Create User Failed: No new user data\n");
+                    continue;
+                }
+                
+                pthread_mutex_lock(&userRegisterMutex);
+                userRegistered = true;
+                pthread_mutex_unlock(&userRegisterMutex);
+                pthread_join(displayTid, NULL);
+
+                userIndex = numberUsers - 1;
+                DisplayText_registerUserMessage(userData[userIndex].waterIntakeGoalLitres);
+                printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
             }
 
-            userIndex = numberUsers - 1;
-            printf("Create User Success! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
+            if(RFIDReader_getActivePiccUID(&uid) != STATUS_OK) {
+                pthread_cancel(displayTid);
+            }
         }
         else {
-            // TODO: LCD Welcome Existing User
+            DisplayText_welcomeExistingUserMessage(
+                userData[userIndex].waterIntakeGoalLitres,
+                userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres
+            );
             printf("Welcome existing user! UID: %llx, phone #: %s\n", userData[userIndex].uid, userData[userIndex].phoneNumber);
         }
 
+        int totalDispensedWeightGrams = 0;
+
+        // While tagged container is present
         while(RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
-
             // Wait for button Press
-            if(!userIsNew) {
-                // TODO: LCD Welcome Existing User
-            }
-
             printf("Start Filling\n");
 
             while (!Button_isPressed(DISPENSE_BUTTON_GPIO) && RFIDReader_getActivePiccUID(&uid) == STATUS_OK) {
@@ -203,7 +255,6 @@ static void* waterDispenser(void* _arg)
             }
 
             if(RFIDReader_getActivePiccUID(&uid) != STATUS_OK) {
-                sleepForMs(HARDWARE_CHECK_DELAY_MS);
                 break;
             }
 
@@ -212,34 +263,46 @@ static void* waterDispenser(void* _arg)
 
             while(Button_isPressed(DISPENSE_BUTTON_GPIO)) {
                 dispensedWeightGrams = Scale_getWeightGrams() - initialWeightGrams;
-                // TODO: LCD fill progress screen
-                printf("Filled: %d\n", dispensedWeightGrams);
+                DisplayText_fillingUpMessage(dispensedWeightGrams + totalDispensedWeightGrams);
+                printf("Filled: %d\n", dispensedWeightGrams + totalDispensedWeightGrams);
             }
-            
-            // Calculate the dispensed volume and update goal. Water's mass to volume conversion is about 1
-            int dispensedVolumeMl = dispensedWeightGrams;
-            double dispensedVolumeL = (double)dispensedVolumeMl / (double)ML_PER_L;
 
-            userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
-            if(userData[userIndex].waterIntakeProgressLitres > userData[userIndex].waterIntakeGoalLiters) {
-                userData[userIndex].waterIntakeGoalLiters = userData[userIndex].waterIntakeProgressLitres;
-                // TODO: LCD goal reached screen
-                printf("Goal Reached! %f / %f L\n",
-                    userData[userIndex].waterIntakeProgressLitres,
-                    userData[userIndex].waterIntakeGoalLiters
-                );
-            }
-            else {
-                // TODO: LCD display post dispense screen
-                printf("Goal Progress: %f / %f L\n",
-                    userData[userIndex].waterIntakeProgressLitres,
-                    userData[userIndex].waterIntakeGoalLiters
-                );
-            }
+            dispensedWeightGrams = (dispensedWeightGrams < 0) ? 0 : dispensedWeightGrams;
+
+            totalDispensedWeightGrams += dispensedWeightGrams;
         }
 
+        if(totalDispensedWeightGrams == 0) {
+            continue;
+        }
+
+        // Calculate the dispensed volume
+        double dispensedVolumeL = (double)totalDispensedWeightGrams / (double)ML_PER_L;
+
+        // Update goal progress
+        userData[userIndex].waterIntakeProgressLitres += dispensedVolumeL;
+
+        double amountRemainingL = userData[userIndex].waterIntakeGoalLitres - userData[userIndex].waterIntakeProgressLitres;
+
+        if(amountRemainingL <= 0) {
+            userData[userIndex].waterIntakeProgressLitres = userData[userIndex].waterIntakeGoalLitres;
+        }
+        
+        // Correct amount remaining
+        amountRemainingL = (amountRemainingL < 0) ? 0 : amountRemainingL;
+        int amountRemainingML = (int)(amountRemainingL * ML_PER_L);
+
+        printf("amount remaining: %d\n", amountRemainingML);
+
+        DisplayText_postDispenseMessage(amountRemainingML);
+
+        printf("Goal Progress %f / %f L\n",
+            userData[userIndex].waterIntakeProgressLitres,
+            userData[userIndex].waterIntakeGoalLitres
+        );
+
         userIsNew = false;
-        sleepForMs(HARDWARE_CHECK_DELAY_MS);
+        sleepForMs(POST_DISPENSE_MESSAGE_DELAY_MS);
     }
 
     pthread_exit(NULL);
@@ -260,7 +323,7 @@ static void init(void)
     RFIDReader_init(RFID_SPI_PORT_NUM, RFID_SPI_CHIP_SEL, RFID_RST_PIN, RFID_RST_GPIO);
     
     // LCD init
-    LCDDisplay_init(LCD_I2C_BUS, LCD_I2C_ADDR);
+    DisplayText_init(LCD_I2C_BUS);
 
     // Button/Switch Init
     Button_init(DISPENSE_BUTTON_PIN, DISPENSE_BUTTON_GPIO);

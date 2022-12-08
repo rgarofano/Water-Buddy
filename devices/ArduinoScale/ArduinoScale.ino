@@ -1,22 +1,14 @@
-/*
-   -------------------------------------------------------------------------------------
-   HX711_ADC
-   Arduino library for HX711 24-Bit Analog-to-Digital Converter for Weight Scales
-   Olav Kallhovd sept2017
-   -------------------------------------------------------------------------------------
-*/
 
-/*
-   This example file shows how to calibrate the load cell and optionally store the calibration
-   value in EEPROM, and also how to change the value manually.
-   The result value can then later be included in your project sketch or fetched from EEPROM.
-
-   To implement calibration in your project sketch the simplified procedure is as follow:
-       LoadCell.tare();
-       //place known mass
-       LoadCell.refreshDataSet();
-       float newCalibrationValue = LoadCell.getNewCalibration(known_mass);
-*/
+/**
+ * Scale data to BeagleBone driver code
+ * Reads the HX711 load cell amp using a pre-existing library, references linked below
+ * Sends data to BeagleBone using an improvised serial protocol
+ * 
+ * This file was also based on an example given in the HX711 Library
+ * 
+ * HX711 Library:
+ * https://github.com/olkal/HX711_ADC
+ */
 
 #include <HX711_ADC.h>
 
@@ -71,7 +63,6 @@ void setup()
     Serial.println("Startup complete");
   }
   while (!LoadCell.update());
-  // calibrate();
   LoadCell.setCalFactor(CALIBRATION_FACTOR_GRAMS);
 } 
 
@@ -89,37 +80,6 @@ void loop()
     exportWeight();
     digitalWrite(BBG_ACK_PIN, LOW);
   }
-}
-
-void calibrate()
-{
-  LoadCell.tareNoDelay();
-  while(LoadCell.getTareStatus() == false) {
-    LoadCell.update();
-  }
-
-  Serial.println("Place your known mass on the loadcell.");
-  Serial.println("Then send the weight of this mass from serial monitor.");
-
-  float known_mass = 0;
-  bool _resume = false;
-  while (_resume == false) {
-    LoadCell.update();
-    if (Serial.available() > 0) {
-      known_mass = Serial.parseFloat();
-      if (known_mass != 0) {
-        Serial.print("Known mass is: ");
-        Serial.println(known_mass);
-        _resume = true;
-      }
-    }
-  }
-
-  LoadCell.refreshDataSet(); //refresh the dataset to be sure that the known mass is measured correct
-  float newCalibrationValue = LoadCell.getNewCalibration(known_mass); //get the new calibration value
-
-  Serial.print("New calibration value: ");
-  Serial.println(newCalibrationValue);
 }
 
 void exportWeight(void)
